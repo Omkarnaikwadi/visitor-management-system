@@ -84,13 +84,15 @@ const migrate = async () => {
     await client.query(`
       CREATE TABLE IF NOT EXISTS otp_verifications (
         id SERIAL PRIMARY KEY,
-        phone VARCHAR(20) UNIQUE NOT NULL,
+        phone VARCHAR(100) UNIQUE NOT NULL,
         otp VARCHAR(6) NOT NULL,
         expires_at TIMESTAMP NOT NULL,
         verified BOOLEAN DEFAULT false,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    await client.query(`ALTER TABLE otp_verifications ALTER COLUMN phone TYPE VARCHAR(100)`).catch(() => {});
 
     await client.query('CREATE INDEX IF NOT EXISTS idx_visits_visitor ON visits(visitor_id)');
     await client.query('CREATE INDEX IF NOT EXISTS idx_visits_host ON visits(host_id)');
