@@ -1,10 +1,4 @@
-const Brevo = require('@getbrevo/brevo');
-
-const getClient = () => {
-  const client = new Brevo.TransactionalEmailsApi();
-  client.authentications['api-key'].apiKey = process.env.BREVO_API_KEY;
-  return client;
-};
+const { BrevoClient } = require('@getbrevo/brevo');
 
 const sendEmail = async (to, subject, html, attachments = []) => {
   if (!process.env.BREVO_API_KEY) {
@@ -12,25 +6,27 @@ const sendEmail = async (to, subject, html, attachments = []) => {
     console.error('[Email]', err.message);
     throw err;
   }
-  const fromEmail = process.env.EMAIL_FROM_ADDRESS || 'noreply@visitorpass.in';
+  const fromEmail = process.env.EMAIL_FROM_ADDRESS || 'noreply@example.com';
   const fromName = process.env.EMAIL_FROM_NAME || 'VMS System';
   console.log(`[Email] Sending "${subject}" to ${to} via Brevo`);
 
-  const email = new Brevo.SendSmtpEmail();
-  email.sender = { name: fromName, email: fromEmail };
-  email.to = [{ email: to }];
-  email.subject = subject;
-  email.htmlContent = html;
+  const client = new BrevoClient({ apiKey: process.env.BREVO_API_KEY });
+  const payload = {
+    sender: { name: fromName, email: fromEmail },
+    to: [{ email: to }],
+    subject,
+    htmlContent: html,
+  };
   if (attachments.length) {
-    email.attachment = attachments.map(a => ({
+    payload.attachment = attachments.map(a => ({
       name: a.filename,
       content: require('fs').readFileSync(a.path).toString('base64'),
     }));
   }
 
   try {
-    const result = await getClient().sendTransacEmail(email);
-    console.log('[Email] Sent successfully, messageId:', result?.body?.messageId);
+    const result = await client.transactionalEmails.sendTransacEmail(payload);
+    console.log('[Email] Sent successfully, messageId:', result?.body?.messageId || result?.messageId);
   } catch (err) {
     console.error('[Email] Brevo error:', err?.response?.body || err.message);
     throw new Error(err?.response?.body?.message || err.message);
