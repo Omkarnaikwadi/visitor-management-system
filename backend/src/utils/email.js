@@ -9,6 +9,7 @@ const sendEmail = async (to, subject, html, attachments = []) => {
     throw err;
   }
   const from = process.env.EMAIL_FROM || 'VMS System <onboarding@resend.dev>';
+  console.log(`[Email] Sending "${subject}" to ${to} via Resend (from: ${from})`);
   const payload = { from, to, subject, html };
   if (attachments.length) {
     payload.attachments = attachments.map(a => ({
@@ -16,8 +17,12 @@ const sendEmail = async (to, subject, html, attachments = []) => {
       content: require('fs').readFileSync(a.path),
     }));
   }
-  const { error } = await getResend().emails.send(payload);
-  if (error) throw new Error(error.message);
+  const { data, error } = await getResend().emails.send(payload);
+  if (error) {
+    console.error('[Email] Resend error:', JSON.stringify(error));
+    throw new Error(error.message);
+  }
+  console.log('[Email] Sent successfully, id:', data?.id);
 };
 
 const sendOTPEmail = async (email, otp) => {
