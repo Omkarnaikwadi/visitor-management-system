@@ -14,6 +14,7 @@ const otpController = require('../controllers/otpController');
 // Auth routes
 router.post('/auth/login', authController.login);
 router.post('/auth/register', auth, adminOnly, authController.register);
+router.post('/auth/register/self', authController.selfRegister);
 router.get('/auth/profile', auth, authController.getProfile);
 
 // OTP routes (public - no auth needed)
