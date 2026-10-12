@@ -21,9 +21,8 @@ const sendOTPHandler = async (req, res) => {
     );
     console.log('[OTP] DB insert successful');
 
-    console.log('[OTP] Sending email via SMTP...');
-    console.log('[OTP] SMTP_USER configured:', !!process.env.SMTP_USER);
-    console.log('[OTP] SMTP_PASS configured:', !!process.env.SMTP_PASS);
+    console.log('[OTP] Sending email via Brevo...');
+    console.log('[OTP] BREVO_API_KEY configured:', !!process.env.BREVO_API_KEY);
     await sendOTPEmail(email, otp);
     console.log('[OTP] Email sent successfully to:', email);
 
