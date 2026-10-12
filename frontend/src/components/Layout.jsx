@@ -44,10 +44,20 @@ export default function Layout({ children }) {
           ))}
         </nav>
         <div className="p-4 border-t border-indigo-600">
-          <p className="text-sm text-indigo-200 mb-2">{user?.name}</p>
-          <p className="text-xs text-indigo-300 mb-3">{user?.role}</p>
-          <button onClick={handleLogout} className="flex items-center gap-2 text-indigo-200 hover:text-white">
-            <FiLogOut /> Logout
+          <div className="flex items-center gap-3 px-4 py-2 mb-2">
+            <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-sm font-bold">
+              {user?.name?.charAt(0).toUpperCase()}
+            </div>
+            <div className="overflow-hidden">
+              <p className="text-sm font-medium truncate">{user?.name}</p>
+              <p className="text-xs text-indigo-300 capitalize">{user?.role}</p>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-4 py-3 rounded-lg w-full hover:bg-indigo-600 transition text-indigo-200 hover:text-white"
+          >
+            <FiLogOut size={20} /> Logout
           </button>
         </div>
       </aside>

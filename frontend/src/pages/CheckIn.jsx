@@ -5,16 +5,31 @@ import { FiCamera, FiMaximize } from 'react-icons/fi';
 import WebcamCapture from '../components/WebcamCapture';
 import QRScanner from '../components/QRScanner';
 
+const validators = {
+  email: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? '' : 'Enter a valid email address',
+  phone: (v) => /^[6-9]\d{9}$/.test(v) ? '' : 'Enter a valid 10-digit mobile number',
+  aadhar: (v) => /^\d{12}$/.test(v) ? '' : 'Aadhar number must be exactly 12 digits',
+  pan: (v) => /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(v.toUpperCase()) ? '' : 'PAN format: ABCDE1234F (5 letters, 4 digits, 1 letter)',
+  driving: (v) => v.length >= 6 ? '' : 'Enter a valid driving license number',
+  passport: (v) => /^[A-Z][0-9]{7}$/.test(v.toUpperCase()) ? '' : 'Passport format: A1234567 (1 letter + 7 digits)',
+};
+
+const validateIdNumber = (type, value) => {
+  if (!type || !value) return '';
+  return validators[type] ? validators[type](value) : '';
+};
+
 export default function CheckIn() {
   const [hosts, setHosts] = useState([]);
   const [preReg, setPreReg] = useState(null);
   const [result, setResult] = useState(null);
   const [showCamera, setShowCamera] = useState(false);
   const [showQRScanner, setShowQRScanner] = useState(false);
-  const [otpStep, setOtpStep] = useState(false);       // show OTP input
-  const [otpVerified, setOtpVerified] = useState(false); // phone verified
+  const [otpStep, setOtpStep] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
   const [otp, setOtp] = useState('');
   const [otpLoading, setOtpLoading] = useState(false);
+  const [errors, setErrors] = useState({});
   const [form, setForm] = useState({
     name: '', email: '', phone: '', company: '', host_id: '', purpose: '',
     id_type: '', id_number: '', photo_base64: '', pre_registration_id: ''
@@ -24,8 +39,12 @@ export default function CheckIn() {
     hostAPI.getAll().then((res) => setHosts(res.data));
   }, []);
 
+  const setError = (field, msg) => setErrors((e) => ({ ...e, [field]: msg }));
+  const clearError = (field) => setErrors((e) => ({ ...e, [field]: '' }));
+
   const handleSendOTP = async () => {
-    if (!form.email || !form.email.includes('@')) return toast.error('Enter a valid email address first');
+    const emailErr = validators.email(form.email);
+    if (emailErr) { setError('email', emailErr); return; }
     setOtpLoading(true);
     try {
       await otpAPI.send(form.email);
@@ -54,26 +73,22 @@ export default function CheckIn() {
   };
 
   const handlePhoneBlur = async () => {
-    if (form.phone.length >= 10) {
-      try {
-        const res = await preRegAPI.getByPhone(form.phone);
-        if (res.data.length > 0) {
-          const pr = res.data[0];
-          setPreReg(pr);
-          setForm((f) => ({
-            ...f,
-            name: pr.visitor_name,
-            email: pr.visitor_email || '',
-            phone: pr.visitor_phone,
-            company: pr.visitor_company || '',
-            host_id: pr.host_id,
-            purpose: pr.purpose || '',
-            pre_registration_id: pr.id
-          }));
-          toast.success('Pre-registration found!');
-        }
-      } catch (err) {}
-    }
+    const err = validators.phone(form.phone);
+    if (err) { setError('phone', err); return; }
+    clearError('phone');
+    try {
+      const res = await preRegAPI.getByPhone(form.phone);
+      if (res.data.length > 0) {
+        const pr = res.data[0];
+        setPreReg(pr);
+        setForm((f) => ({
+          ...f, name: pr.visitor_name, email: pr.visitor_email || '',
+          phone: pr.visitor_phone, company: pr.visitor_company || '',
+          host_id: pr.host_id, purpose: pr.purpose || '', pre_registration_id: pr.id
+        }));
+        toast.success('Pre-registration found!');
+      }
+    } catch (err) {}
   };
 
   const handleQRScan = async (qrData) => {
@@ -81,13 +96,7 @@ export default function CheckIn() {
       const res = await visitorAPI.scanQR(qrData);
       if (res.data.type === 'visitor') {
         const v = res.data.data;
-        setForm((f) => ({
-          ...f,
-          name: v.name,
-          email: v.email || '',
-          phone: v.phone,
-          company: v.company || ''
-        }));
+        setForm((f) => ({ ...f, name: v.name, email: v.email || '', phone: v.phone, company: v.company || '' }));
         toast.success('Visitor found! Please select host and purpose.');
       } else if (res.data.type === 'visit') {
         const visit = res.data.data;
@@ -112,6 +121,15 @@ export default function CheckIn() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const newErrors = {};
+    if (validators.email(form.email)) newErrors.email = validators.email(form.email);
+    if (validators.phone(form.phone)) newErrors.phone = validators.phone(form.phone);
+    if (form.id_type && form.id_number) {
+      const idErr = validateIdNumber(form.id_type, form.id_number);
+      if (idErr) newErrors.id_number = idErr;
+    }
+    if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
+
     try {
       const res = await visitorAPI.checkIn(form);
       setResult(res.data);
@@ -123,26 +141,21 @@ export default function CheckIn() {
   };
 
   const resetForm = () => {
-    setForm({
-      name: '', email: '', phone: '', company: '', host_id: '', purpose: '',
-      id_type: '', id_number: '', photo_base64: '', pre_registration_id: ''
-    });
-    setPreReg(null);
-    setOtpStep(false);
-    setOtpVerified(false);
-    setOtp('');
+    setForm({ name: '', email: '', phone: '', company: '', host_id: '', purpose: '', id_type: '', id_number: '', photo_base64: '', pre_registration_id: '' });
+    setPreReg(null); setOtpStep(false); setOtpVerified(false); setOtp(''); setErrors({});
   };
 
-  const inputClass = "w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none";
+  const inputClass = (field) =>
+    `w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none ${errors[field] ? 'border-red-400 focus:ring-red-400' : ''}`;
+
+  const ErrMsg = ({ field }) => errors[field]
+    ? <p className="text-xs text-red-500 mt-1">{errors[field]}</p> : null;
 
   return (
     <div className="max-w-2xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Visitor Check-In</h1>
-        <button
-          onClick={() => setShowQRScanner(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
-        >
+        <button onClick={() => setShowQRScanner(true)} className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
           <FiMaximize /> Scan QR
         </button>
       </div>
@@ -157,9 +170,7 @@ export default function CheckIn() {
           <p className="text-gray-600 mb-4">Badge: <span className="font-mono font-bold">{result.badge_number}</span></p>
           {result.qr_code && <img src={result.qr_code} alt="QR Code" className="mx-auto w-48 h-48 mb-4" />}
           <p className="text-sm text-gray-500">Host: {result.host_name} ({result.department})</p>
-          <button onClick={() => setResult(null)} className="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-lg">
-            New Check-In
-          </button>
+          <button onClick={() => setResult(null)} className="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-lg">New Check-In</button>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="bg-white rounded-xl p-6 shadow-sm space-y-4">
@@ -169,48 +180,39 @@ export default function CheckIn() {
             </div>
           )}
 
-          {/* Photo Section */}
+          {/* Photo */}
           <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
             <div className="w-20 h-20 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
-              {form.photo_base64 ? (
-                <img src={form.photo_base64} alt="Visitor" className="w-full h-full object-cover" />
-              ) : (
-                <FiCamera size={24} className="text-gray-400" />
-              )}
+              {form.photo_base64
+                ? <img src={form.photo_base64} alt="Visitor" className="w-full h-full object-cover" />
+                : <FiCamera size={24} className="text-gray-400" />}
             </div>
             <div>
-              <button
-                type="button"
-                onClick={() => setShowCamera(true)}
-                className="px-4 py-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-200"
-              >
+              <button type="button" onClick={() => setShowCamera(true)} className="px-4 py-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-200">
                 {form.photo_base64 ? 'Retake Photo' : 'Capture Photo'}
               </button>
               <p className="text-xs text-gray-500 mt-1">Optional: Capture visitor photo</p>
             </div>
           </div>
 
+          {/* Email + Name */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Email *</label>
               <div className="flex gap-2">
-                <input type="email" value={form.email} onChange={(e) => {
-                    setForm({ ...form, email: e.target.value });
-                    setOtpVerified(false);
-                    setOtpStep(false);
-                    setOtp('');
-                  }}
-                  className={inputClass} required />
+                <input type="email" value={form.email}
+                  onChange={(e) => { setForm({ ...form, email: e.target.value }); setOtpVerified(false); setOtpStep(false); setOtp(''); clearError('email'); }}
+                  onBlur={() => { const err = validators.email(form.email); if (err) setError('email', err); }}
+                  className={inputClass('email')} required />
                 {!otpVerified && (
                   <button type="button" onClick={handleSendOTP} disabled={otpLoading}
                     className="px-3 py-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-200 text-sm whitespace-nowrap disabled:opacity-50">
                     {otpLoading ? '...' : 'Send OTP'}
                   </button>
                 )}
-                {otpVerified && (
-                  <span className="px-3 py-2 bg-green-100 text-green-600 rounded-lg text-sm whitespace-nowrap">✓ Verified</span>
-                )}
+                {otpVerified && <span className="px-3 py-2 bg-green-100 text-green-600 rounded-lg text-sm whitespace-nowrap">✓ Verified</span>}
               </div>
+              <ErrMsg field="email" />
               {otpStep && (
                 <div className="flex gap-2 mt-2">
                   <input type="text" maxLength={6} value={otp} onChange={(e) => setOtp(e.target.value)}
@@ -226,51 +228,52 @@ export default function CheckIn() {
                   </button>
                 </div>
               )}
-              {otpVerified && (
-                <p className="text-xs text-green-600 mt-1">✓ Gate pass will be sent to this email after check-in</p>
-              )}
+              {otpVerified && <p className="text-xs text-green-600 mt-1">✓ Gate pass will be sent to this email after check-in</p>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Name *</label>
               <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className={inputClass} required />
+                className={inputClass('name')} required />
             </div>
           </div>
 
+          {/* Phone + Company */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Phone * <span className="text-xs text-gray-400">(for WhatsApp gate pass)</span></label>
-              <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                onBlur={handlePhoneBlur} className={inputClass} required />
+              <label className="block text-sm font-medium mb-1">Phone * <span className="text-xs text-gray-400">(WhatsApp gate pass)</span></label>
+              <input type="tel" value={form.phone} maxLength={10}
+                onChange={(e) => { setForm({ ...form, phone: e.target.value.replace(/\D/g, '') }); clearError('phone'); }}
+                onBlur={handlePhoneBlur} className={inputClass('phone')} required />
+              <ErrMsg field="phone" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Company</label>
-              <input type="text" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })}
-                className={inputClass} />
+              <input type="text" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} className={inputClass('company')} />
             </div>
           </div>
 
+          {/* Host */}
           <div>
             <label className="block text-sm font-medium mb-1">Host *</label>
-            <select value={form.host_id} onChange={(e) => setForm({ ...form, host_id: e.target.value })}
-              className={inputClass} required>
+            <select value={form.host_id} onChange={(e) => setForm({ ...form, host_id: e.target.value })} className={inputClass('host_id')} required>
               <option value="">Select Host</option>
-              {hosts.map((h) => (
-                <option key={h.id} value={h.id}>{h.name} - {h.department}</option>
-              ))}
+              {hosts.map((h) => <option key={h.id} value={h.id}>{h.name} - {h.department}</option>)}
             </select>
           </div>
 
+          {/* Purpose */}
           <div>
             <label className="block text-sm font-medium mb-1">Purpose of Visit *</label>
-            <input type="text" value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })}
-              className={inputClass} required />
+            <input type="text" value={form.purpose} onChange={(e) => setForm({ ...form, purpose: e.target.value })} className={inputClass('purpose')} required />
           </div>
 
+          {/* ID Type + ID Number */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">ID Type</label>
-              <select value={form.id_type} onChange={(e) => setForm({ ...form, id_type: e.target.value })} className={inputClass}>
+              <select value={form.id_type}
+                onChange={(e) => { setForm({ ...form, id_type: e.target.value, id_number: '' }); clearError('id_number'); }}
+                className={inputClass('id_type')}>
                 <option value="">Select ID Type</option>
                 <option value="aadhar">Aadhar Card</option>
                 <option value="pan">PAN Card</option>
@@ -279,9 +282,27 @@ export default function CheckIn() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">ID Number</label>
-              <input type="text" value={form.id_number} onChange={(e) => setForm({ ...form, id_number: e.target.value })}
-                className={inputClass} />
+              <label className="block text-sm font-medium mb-1">
+                ID Number
+                {form.id_type === 'aadhar' && <span className="text-xs text-gray-400 ml-1">(12 digits)</span>}
+                {form.id_type === 'pan' && <span className="text-xs text-gray-400 ml-1">(ABCDE1234F)</span>}
+                {form.id_type === 'passport' && <span className="text-xs text-gray-400 ml-1">(A1234567)</span>}
+              </label>
+              <input type="text" value={form.id_number}
+                maxLength={form.id_type === 'aadhar' ? 12 : form.id_type === 'pan' ? 10 : undefined}
+                onChange={(e) => {
+                  const val = form.id_type === 'pan' ? e.target.value.toUpperCase() : e.target.value;
+                  setForm({ ...form, id_number: val });
+                  clearError('id_number');
+                }}
+                onBlur={() => {
+                  if (form.id_type && form.id_number) {
+                    const err = validateIdNumber(form.id_type, form.id_number);
+                    if (err) setError('id_number', err);
+                  }
+                }}
+                className={inputClass('id_number')} />
+              <ErrMsg field="id_number" />
             </div>
           </div>
 
