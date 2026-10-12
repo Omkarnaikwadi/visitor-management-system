@@ -9,10 +9,16 @@ const preRegController = require('../controllers/preRegistrationController');
 const dashboardController = require('../controllers/dashboardController');
 const reportController = require('../controllers/reportController');
 
+const otpController = require('../controllers/otpController');
+
 // Auth routes
 router.post('/auth/login', authController.login);
 router.post('/auth/register', auth, adminOnly, authController.register);
 router.get('/auth/profile', auth, authController.getProfile);
+
+// OTP routes (public - no auth needed)
+router.post('/otp/send', otpController.sendOTPHandler);
+router.post('/otp/verify', otpController.verifyOTPHandler);
 
 // Visitor/Visit routes
 router.post('/visitors/checkin', auth, visitorController.checkIn);

@@ -4,12 +4,23 @@ const { notifyHost } = require('../utils/email');
 const { saveBase64Image } = require('../utils/upload');
 const { notifyVisitorArrival, notifyVisitorCheckout, notifyStatsUpdate } = require('../config/socket');
 const { cache } = require('../config/redis');
+const { sendGatePass } = require('../utils/whatsapp');
 
 const checkIn = async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     const { name, email, phone, company, host_id, purpose, id_type, id_number, photo_base64, pre_registration_id } = req.body;
+
+    // Verify OTP was completed for this phone
+    const otpResult = await client.query(
+      'SELECT verified FROM otp_verifications WHERE phone = $1',
+      [phone]
+    );
+    if (otpResult.rows.length === 0 || !otpResult.rows[0].verified) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: 'Phone number not verified. Please complete OTP verification.' });
+    }
 
     // Save photo if provided
     let photoUrl = null;
@@ -71,10 +82,13 @@ const checkIn = async (req, res) => {
       qr_code: qrCode,
       visitor_name: name,
       visitor_phone: phone,
+      visitor_email: email,
       company,
       photo_url: photoUrl,
       host_name: host?.name,
-      department: host?.department
+      department: host?.department,
+      id_type,
+      id_number
     };
 
     // Send real-time notification via Socket.io
@@ -85,6 +99,11 @@ const checkIn = async (req, res) => {
     if (host?.email) {
       notifyHost(host.email, name, purpose);
     }
+
+    // Send gate pass via WhatsApp
+    sendGatePass(phone, responseData).catch((err) =>
+      console.error('Gate pass WhatsApp error:', err.message)
+    );
 
     res.status(201).json(responseData);
   } catch (error) {
