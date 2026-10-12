@@ -71,7 +71,23 @@ export default function Login() {
       toast.success('Welcome back!');
       navigate('/');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Invalid credentials');
+      // Render free tier cold start — retry once automatically
+      if (!err.response) {
+        toast.loading('Server is waking up, retrying...', { id: 'retry' });
+        try {
+          await new Promise((r) => setTimeout(r, 4000));
+          await login(email, password);
+          toast.dismiss('retry');
+          toast.success('Welcome back!');
+          navigate('/');
+          return;
+        } catch (retryErr) {
+          toast.dismiss('retry');
+          toast.error(retryErr.response?.data?.error || 'Server is starting up, please try again in a moment');
+        }
+      } else {
+        toast.error(err.response?.data?.error || 'Invalid credentials');
+      }
     } finally {
       setLoading(false);
     }
