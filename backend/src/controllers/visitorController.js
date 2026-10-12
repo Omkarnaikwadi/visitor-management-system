@@ -99,13 +99,18 @@ const checkIn = async (req, res) => {
       notifyHost(host.email, name, purpose);
     }
 
-    // Send gate pass via email to visitor
-    if (email) {
-      const { generateGatePassPDF } = require('../utils/gatepass');
-      generateGatePassPDF(responseData)
-        .then(({ filepath }) => sendGatePassEmail(email, responseData, filepath))
-        .catch((err) => console.error('Gate pass email error:', err.message));
-    }
+    // Send gate pass via email + WhatsApp
+    const { generateGatePassPDF } = require('../utils/gatepass');
+    const { sendGatePass: sendWhatsAppGatePass } = require('../utils/whatsapp');
+
+    generateGatePassPDF(responseData)
+      .then(async ({ filepath }) => {
+        const tasks = [];
+        if (email) tasks.push(sendGatePassEmail(email, responseData, filepath).catch(e => console.error('[GatePass] Email error:', e.message)));
+        if (phone) tasks.push(sendWhatsAppGatePass(phone, responseData).catch(e => console.error('[GatePass] WhatsApp error:', e.message)));
+        await Promise.all(tasks);
+      })
+      .catch((err) => console.error('[GatePass] PDF generation error:', err.message));
 
     res.status(201).json(responseData);
   } catch (error) {

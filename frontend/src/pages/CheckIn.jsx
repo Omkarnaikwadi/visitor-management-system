@@ -239,9 +239,9 @@ export default function CheckIn() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Phone</label>
+              <label className="block text-sm font-medium mb-1">Phone * <span className="text-xs text-gray-400">(for WhatsApp gate pass)</span></label>
               <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                onBlur={handlePhoneBlur} className={inputClass} />
+                onBlur={handlePhoneBlur} className={inputClass} required />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Company</label>
