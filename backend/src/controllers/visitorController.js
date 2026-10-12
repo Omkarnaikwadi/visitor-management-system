@@ -1,7 +1,6 @@
 const pool = require('../config/db');
 const { generateQRCode } = require('../utils/qrcode');
 const { notifyHost, sendGatePassEmail } = require('../utils/email');
-const { saveBase64Image } = require('../utils/upload');
 const { notifyVisitorArrival, notifyVisitorCheckout, notifyStatsUpdate } = require('../config/socket');
 const { cache } = require('../config/redis');
 
@@ -24,7 +23,7 @@ const checkIn = async (req, res) => {
     // Save photo if provided
     let photoUrl = null;
     if (photo_base64) {
-      photoUrl = saveBase64Image(photo_base64);
+      photoUrl = photo_base64; // store base64 directly in DB
     }
 
     // Create or find visitor

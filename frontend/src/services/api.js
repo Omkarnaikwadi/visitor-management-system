@@ -75,6 +75,7 @@ export const reportAPI = {
 export const getPhotoUrl = (photoUrl) => {
   if (!photoUrl) return null;
   if (photoUrl.startsWith('data:') || photoUrl.startsWith('http')) return photoUrl;
+  // legacy: relative path from old disk storage
   const base = import.meta.env.VITE_API_URL || '';
   return `${base}${photoUrl}`;
 };

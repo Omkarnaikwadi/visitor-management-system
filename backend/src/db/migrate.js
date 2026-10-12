@@ -40,7 +40,7 @@ const migrate = async () => {
         email VARCHAR(100),
         phone VARCHAR(20) NOT NULL,
         company VARCHAR(100),
-        photo_url VARCHAR(255),
+        photo_url TEXT,
         id_type VARCHAR(50),
         id_number VARCHAR(100),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -93,6 +93,7 @@ const migrate = async () => {
     `);
 
     await client.query(`ALTER TABLE otp_verifications ALTER COLUMN phone TYPE VARCHAR(100)`).catch(() => {});
+    await client.query(`ALTER TABLE visitors ALTER COLUMN photo_url TYPE TEXT`).catch(() => {});
 
     await client.query('CREATE INDEX IF NOT EXISTS idx_visits_visitor ON visits(visitor_id)');
     await client.query('CREATE INDEX IF NOT EXISTS idx_visits_host ON visits(host_id)');
