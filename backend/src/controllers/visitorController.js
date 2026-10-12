@@ -1,10 +1,9 @@
 const pool = require('../config/db');
 const { generateQRCode } = require('../utils/qrcode');
-const { notifyHost } = require('../utils/email');
+const { notifyHost, sendGatePassEmail } = require('../utils/email');
 const { saveBase64Image } = require('../utils/upload');
 const { notifyVisitorArrival, notifyVisitorCheckout, notifyStatsUpdate } = require('../config/socket');
 const { cache } = require('../config/redis');
-const { sendGatePass } = require('../utils/whatsapp');
 
 const checkIn = async (req, res) => {
   const client = await pool.connect();
@@ -12,14 +11,14 @@ const checkIn = async (req, res) => {
     await client.query('BEGIN');
     const { name, email, phone, company, host_id, purpose, id_type, id_number, photo_base64, pre_registration_id } = req.body;
 
-    // Verify OTP was completed for this phone
+    // Verify OTP was completed for this email
     const otpResult = await client.query(
       'SELECT verified FROM otp_verifications WHERE phone = $1',
-      [phone]
+      [email]
     );
     if (otpResult.rows.length === 0 || !otpResult.rows[0].verified) {
       await client.query('ROLLBACK');
-      return res.status(400).json({ error: 'Phone number not verified. Please complete OTP verification.' });
+      return res.status(400).json({ error: 'Email not verified. Please complete OTP verification.' });
     }
 
     // Save photo if provided
@@ -95,15 +94,18 @@ const checkIn = async (req, res) => {
     notifyVisitorArrival(host_id, responseData);
     notifyStatsUpdate();
 
-    // Send email notification
+    // Send email notification to host
     if (host?.email) {
       notifyHost(host.email, name, purpose);
     }
 
-    // Send gate pass via WhatsApp
-    sendGatePass(phone, responseData).catch((err) =>
-      console.error('Gate pass WhatsApp error:', err.message)
-    );
+    // Send gate pass via email to visitor
+    if (email) {
+      const { generateGatePassPDF } = require('../utils/gatepass');
+      generateGatePassPDF(responseData)
+        .then(({ filepath }) => sendGatePassEmail(email, responseData, filepath))
+        .catch((err) => console.error('Gate pass email error:', err.message));
+    }
 
     res.status(201).json(responseData);
   } catch (error) {
