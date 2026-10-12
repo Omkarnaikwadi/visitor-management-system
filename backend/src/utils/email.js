@@ -6,7 +6,7 @@ const sendEmail = async (to, subject, html, attachments = []) => {
     console.error('[Email]', err.message);
     throw err;
   }
-  const fromEmail = process.env.EMAIL_FROM_ADDRESS || 'noreply@example.com';
+  const fromEmail = process.env.EMAIL_FROM_ADDRESS || 'noreply@brevo.com';
   const fromName = process.env.EMAIL_FROM_NAME || 'VMS System';
   console.log(`[Email] Sending "${subject}" to ${to} via Brevo`);
 
