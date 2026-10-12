@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { visitorAPI } from '../services/api';
+import { visitorAPI, getPhotoUrl } from '../services/api';
 import { useSocket } from '../context/SocketContext';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -98,7 +98,7 @@ export default function ActiveVisitors() {
             <div key={v.id} className="bg-white rounded-xl p-4 shadow-sm flex justify-between items-center">
               <div className="flex gap-4 items-center">
                 {v.photo_url ? (
-                  <img src={v.photo_url} alt="" className="w-12 h-12 rounded-full object-cover" />
+                  <img src={getPhotoUrl(v.photo_url)} alt="" className="w-12 h-12 rounded-full object-cover" />
                 ) : (
                   <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">
                     {v.visitor_name.charAt(0)}

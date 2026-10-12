@@ -69,4 +69,11 @@ export const reportAPI = {
   getDepartments: () => api.get('/reports/departments'),
 };
 
+export const getPhotoUrl = (photoUrl) => {
+  if (!photoUrl) return null;
+  if (photoUrl.startsWith('data:') || photoUrl.startsWith('http')) return photoUrl;
+  const base = import.meta.env.VITE_API_URL || '';
+  return `${base}${photoUrl}`;
+};
+
 export default api;

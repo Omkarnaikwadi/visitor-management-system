@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { visitorAPI, hostAPI, preRegAPI } from '../services/api';
+import { visitorAPI, hostAPI, preRegAPI, getPhotoUrl } from '../services/api';
 import toast from 'react-hot-toast';
 import { FiCamera, FiMaximize } from 'react-icons/fi';
 import WebcamCapture from '../components/WebcamCapture';
@@ -115,7 +115,7 @@ export default function CheckIn() {
         <div className="bg-white rounded-xl p-6 shadow-sm text-center">
           <h2 className="text-xl font-semibold text-green-600 mb-4">✓ Check-In Successful</h2>
           {result.photo_url && (
-            <img src={result.photo_url} alt="Visitor" className="w-24 h-24 rounded-full mx-auto mb-4 object-cover" />
+            <img src={getPhotoUrl(result.photo_url)} alt="Visitor" className="w-24 h-24 rounded-full mx-auto mb-4 object-cover" />
           )}
           <p className="text-lg mb-2">Welcome, {result.visitor_name}!</p>
           <p className="text-gray-600 mb-4">Badge: <span className="font-mono font-bold">{result.badge_number}</span></p>
