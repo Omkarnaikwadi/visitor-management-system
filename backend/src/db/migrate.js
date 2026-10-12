@@ -6,7 +6,6 @@ const migrate = async () => {
   try {
     await client.query('BEGIN');
 
-    // Users table (admins, receptionists)
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -21,7 +20,6 @@ const migrate = async () => {
       )
     `);
 
-    // Hosts table (employees who receive visitors)
     await client.query(`
       CREATE TABLE IF NOT EXISTS hosts (
         id SERIAL PRIMARY KEY,
@@ -35,7 +33,6 @@ const migrate = async () => {
       )
     `);
 
-    // Visitors table
     await client.query(`
       CREATE TABLE IF NOT EXISTS visitors (
         id SERIAL PRIMARY KEY,
@@ -50,7 +47,6 @@ const migrate = async () => {
       )
     `);
 
-    // Visits table
     await client.query(`
       CREATE TABLE IF NOT EXISTS visits (
         id SERIAL PRIMARY KEY,
@@ -68,7 +64,6 @@ const migrate = async () => {
       )
     `);
 
-    // Pre-registrations table
     await client.query(`
       CREATE TABLE IF NOT EXISTS pre_registrations (
         id SERIAL PRIMARY KEY,
@@ -86,7 +81,6 @@ const migrate = async () => {
       )
     `);
 
-    // OTP verifications table
     await client.query(`
       CREATE TABLE IF NOT EXISTS otp_verifications (
         id SERIAL PRIMARY KEY,
@@ -98,7 +92,6 @@ const migrate = async () => {
       )
     `);
 
-    // Create indexes
     await client.query('CREATE INDEX IF NOT EXISTS idx_visits_visitor ON visits(visitor_id)');
     await client.query('CREATE INDEX IF NOT EXISTS idx_visits_host ON visits(host_id)');
     await client.query('CREATE INDEX IF NOT EXISTS idx_visits_status ON visits(status)');
@@ -112,8 +105,12 @@ const migrate = async () => {
     throw error;
   } finally {
     client.release();
-    await pool.end();
   }
 };
 
-migrate();
+// Allow running directly: node src/db/migrate.js
+if (require.main === module) {
+  migrate().then(() => pool.end()).catch(() => process.exit(1));
+}
+
+module.exports = migrate;

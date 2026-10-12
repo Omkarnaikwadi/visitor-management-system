@@ -7,11 +7,12 @@ const fs = require('fs');
 const routes = require('./routes');
 const { initSocket } = require('./config/socket');
 const { initRedis } = require('./config/redis');
+const migrate = require('./db/migrate');
 
 const app = express();
 const server = http.createServer(app);
 
-// Ensure upload directories exist (recreated after Render redeploy)
+// Ensure upload directories exist
 ['uploads/photos', 'uploads/gatepasses'].forEach((dir) => {
   const full = path.join(__dirname, '..', dir);
   if (!fs.existsSync(full)) fs.mkdirSync(full, { recursive: true });
@@ -54,6 +55,15 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+
+// Run migration then start server
+migrate()
+  .then(() => {
+    server.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('❌ Failed to run migration:', err.message);
+    process.exit(1);
+  });

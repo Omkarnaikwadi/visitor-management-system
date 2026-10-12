@@ -4,10 +4,10 @@
   "description": "Visitor Management System Backend",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js",
+    "start": "node src/db/migrate.js && node src/server.js",
     "dev": "node --watch src/server.js",
     "db:migrate": "node src/db/migrate.js",
-    "postinstall": "npm run db:migrate || true"
+    "postinstall": "echo 'skipping migrate at build time'"
   },
   "engines": {
     "node": ">=18.0.0"

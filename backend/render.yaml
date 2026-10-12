@@ -18,7 +18,7 @@ services:
       - key: FRONTEND_URL
         value: https://your-app.netlify.app
       - key: BACKEND_URL
-        value: https://your-backend.onrender.com
+        value: https://visitor-management-system-0ksa.onrender.com
       - key: REDIS_ENABLED
         value: false
       - key: TWILIO_ACCOUNT_SID
