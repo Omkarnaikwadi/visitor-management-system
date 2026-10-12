@@ -1,25 +1,23 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-const getTransporter = () => nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT) || 465,
-  secure: true,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+const getResend = () => new Resend(process.env.RESEND_API_KEY);
 
 const sendEmail = async (to, subject, html, attachments = []) => {
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    const err = new Error('SMTP credentials not configured (SMTP_USER or SMTP_PASS missing)');
+  if (!process.env.RESEND_API_KEY) {
+    const err = new Error('RESEND_API_KEY not configured');
     console.error('[Email]', err.message);
     throw err;
   }
-  await getTransporter().sendMail({
-    from: `"VMS System" <${process.env.SMTP_USER}>`,
-    to, subject, html, attachments
-  });
+  const from = process.env.EMAIL_FROM || 'VMS System <onboarding@resend.dev>';
+  const payload = { from, to, subject, html };
+  if (attachments.length) {
+    payload.attachments = attachments.map(a => ({
+      filename: a.filename,
+      content: require('fs').readFileSync(a.path),
+    }));
+  }
+  const { error } = await getResend().emails.send(payload);
+  if (error) throw new Error(error.message);
 };
 
 const sendOTPEmail = async (email, otp) => {
