@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { visitorAPI, hostAPI, preRegAPI, getPhotoUrl } from '../services/api';
+import { visitorAPI, hostAPI, preRegAPI, getPhotoUrl, otpAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import { FiCamera, FiMaximize } from 'react-icons/fi';
 import WebcamCapture from '../components/WebcamCapture';
@@ -11,6 +11,10 @@ export default function CheckIn() {
   const [result, setResult] = useState(null);
   const [showCamera, setShowCamera] = useState(false);
   const [showQRScanner, setShowQRScanner] = useState(false);
+  const [otpStep, setOtpStep] = useState(false);       // show OTP input
+  const [otpVerified, setOtpVerified] = useState(false); // phone verified
+  const [otp, setOtp] = useState('');
+  const [otpLoading, setOtpLoading] = useState(false);
   const [form, setForm] = useState({
     name: '', email: '', phone: '', company: '', host_id: '', purpose: '',
     id_type: '', id_number: '', photo_base64: '', pre_registration_id: ''
@@ -19,6 +23,35 @@ export default function CheckIn() {
   useEffect(() => {
     hostAPI.getAll().then((res) => setHosts(res.data));
   }, []);
+
+  const handleSendOTP = async () => {
+    if (form.phone.length < 10) return toast.error('Enter a valid phone number first');
+    setOtpLoading(true);
+    try {
+      await otpAPI.send(form.phone);
+      setOtpStep(true);
+      toast.success('OTP sent to your WhatsApp!');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to send OTP');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async () => {
+    if (otp.length !== 6) return toast.error('Enter the 6-digit OTP');
+    setOtpLoading(true);
+    try {
+      await otpAPI.verify(form.phone, otp);
+      setOtpVerified(true);
+      setOtpStep(false);
+      toast.success('Phone verified!');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Invalid OTP');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
 
   const handlePhoneBlur = async () => {
     if (form.phone.length >= 10) {
@@ -95,6 +128,9 @@ export default function CheckIn() {
       id_type: '', id_number: '', photo_base64: '', pre_registration_id: ''
     });
     setPreReg(null);
+    setOtpStep(false);
+    setOtpVerified(false);
+    setOtp('');
   };
 
   const inputClass = "w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none";
@@ -157,8 +193,39 @@ export default function CheckIn() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Phone *</label>
-              <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                onBlur={handlePhoneBlur} className={inputClass} required />
+              <div className="flex gap-2">
+                <input type="tel" value={form.phone} onChange={(e) => {
+                    setForm({ ...form, phone: e.target.value });
+                    setOtpVerified(false);
+                    setOtpStep(false);
+                    setOtp('');
+                  }}
+                  onBlur={handlePhoneBlur} className={inputClass} required />
+                {!otpVerified && (
+                  <button type="button" onClick={handleSendOTP} disabled={otpLoading}
+                    className="px-3 py-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-200 text-sm whitespace-nowrap disabled:opacity-50">
+                    {otpLoading ? '...' : 'Send OTP'}
+                  </button>
+                )}
+                {otpVerified && (
+                  <span className="px-3 py-2 bg-green-100 text-green-600 rounded-lg text-sm whitespace-nowrap">✓ Verified</span>
+                )}
+              </div>
+              {otpStep && (
+                <div className="flex gap-2 mt-2">
+                  <input type="text" maxLength={6} value={otp} onChange={(e) => setOtp(e.target.value)}
+                    placeholder="Enter 6-digit OTP"
+                    className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-center tracking-widest font-mono" />
+                  <button type="button" onClick={handleVerifyOTP} disabled={otpLoading}
+                    className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm disabled:opacity-50">
+                    {otpLoading ? '...' : 'Verify'}
+                  </button>
+                  <button type="button" onClick={handleSendOTP} disabled={otpLoading}
+                    className="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 text-sm disabled:opacity-50">
+                    Resend
+                  </button>
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Name *</label>
@@ -215,8 +282,9 @@ export default function CheckIn() {
             </div>
           </div>
 
-          <button type="submit" className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 font-medium">
-            Check In Visitor
+          <button type="submit" disabled={!otpVerified}
+            className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+            {otpVerified ? 'Check In Visitor' : 'Verify Phone to Check In'}
           </button>
         </form>
       )}

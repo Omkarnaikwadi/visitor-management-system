@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { dashboardAPI } from '../services/api';
+import { dashboardAPI, getPhotoUrl } from '../services/api';
 import { useSocket } from '../context/SocketContext';
 import { FiUsers, FiUserCheck, FiUserPlus, FiHome, FiWifi, FiWifiOff } from 'react-icons/fi';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
@@ -102,7 +102,7 @@ export default function Dashboard() {
             <div key={visit.id} className="flex justify-between items-center py-2 border-b last:border-0">
               <div className="flex items-center gap-3">
                 {visit.photo_url ? (
-                  <img src={visit.photo_url} alt="" className="w-10 h-10 rounded-full object-cover" />
+                  <img src={getPhotoUrl(visit.photo_url)} alt="" className="w-10 h-10 rounded-full object-cover" />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
                     {visit.visitor_name?.charAt(0)}

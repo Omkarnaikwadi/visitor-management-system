@@ -76,4 +76,9 @@ export const getPhotoUrl = (photoUrl) => {
   return `${base}${photoUrl}`;
 };
 
+export const otpAPI = {
+  send: (phone) => api.post('/otp/send', { phone }),
+  verify: (phone, otp) => api.post('/otp/verify', { phone, otp }),
+};
+
 export default api;
