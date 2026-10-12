@@ -4,7 +4,7 @@
   "description": "Visitor Management System Backend",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/db/migrate.js && node src/server.js",
+    "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "db:migrate": "node src/db/migrate.js",
     "postinstall": "echo 'skipping migrate at build time'"
