@@ -65,5 +65,7 @@ migrate()
   })
   .catch((err) => {
     console.error('❌ Failed to run migration:', err.message);
+    console.error('DATABASE_URL set:', !!process.env.DATABASE_URL);
+    console.error('DB_HOST set:', !!process.env.DB_HOST);
     process.exit(1);
   });
