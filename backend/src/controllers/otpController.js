@@ -22,7 +22,7 @@ const sendOTPHandler = async (req, res) => {
     res.json({ message: 'OTP sent to your mobile number via SMS' });
   } catch (error) {
     console.error('OTP send error:', error.message);
-    console.error('TWILIO_PHONE_NUMBER set:', !!process.env.TWILIO_PHONE_NUMBER);
+    console.error('FAST2SMS_API_KEY set:', !!process.env.FAST2SMS_API_KEY);
     res.status(500).json({ error: 'Failed to send OTP: ' + error.message });
   }
 };
