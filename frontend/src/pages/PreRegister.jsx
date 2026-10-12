@@ -21,8 +21,7 @@ export default function PreRegister() {
     try {
       await preRegAPI.create(form);
       toast.success('Pre-registration created');
-      setForm({ visitor_name: '', visitor_email: '', visitor_phone: '', visitor_company: '',
-        host_id: '', purpose: '', expected_date: '', expected_time: '' });
+      setForm({ visitor_name: '', visitor_email: '', visitor_phone: '', visitor_company: '', host_id: '', purpose: '', expected_date: '', expected_time: '' });
       preRegAPI.getAll().then((res) => setPreRegs(res.data));
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to create');
@@ -35,7 +34,7 @@ export default function PreRegister() {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div>
         <h1 className="text-xl md:text-2xl font-bold mb-6">Pre-Register Visitor</h1>
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl p-6 shadow-sm space-y-4">
+        <form onSubmit={handleSubmit} className="bg-white rounded-xl p-4 md:p-6 shadow-sm space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">Visitor Name *</label>
             <input type="text" value={form.visitor_name}
@@ -43,6 +42,8 @@ export default function PreRegister() {
               className={inputClass} required />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Phone *</label>
               <input type="tel" value={form.visitor_phone}
                 onChange={(e) => setForm({ ...form, visitor_phone: e.target.value })}
                 className={inputClass} required />
@@ -76,7 +77,7 @@ export default function PreRegister() {
               onChange={(e) => setForm({ ...form, purpose: e.target.value })}
               className={inputClass} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Expected Date *</label>
               <input type="date" value={form.expected_date}
