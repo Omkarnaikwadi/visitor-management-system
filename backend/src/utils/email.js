@@ -1,28 +1,40 @@
-const { Resend } = require('resend');
+const Brevo = require('@getbrevo/brevo');
 
-const getResend = () => new Resend(process.env.RESEND_API_KEY);
+const getClient = () => {
+  const client = new Brevo.TransactionalEmailsApi();
+  client.authentications['api-key'].apiKey = process.env.BREVO_API_KEY;
+  return client;
+};
 
 const sendEmail = async (to, subject, html, attachments = []) => {
-  if (!process.env.RESEND_API_KEY) {
-    const err = new Error('RESEND_API_KEY not configured');
+  if (!process.env.BREVO_API_KEY) {
+    const err = new Error('BREVO_API_KEY not configured');
     console.error('[Email]', err.message);
     throw err;
   }
-  const from = process.env.EMAIL_FROM || 'VMS System <onboarding@resend.dev>';
-  console.log(`[Email] Sending "${subject}" to ${to} via Resend (from: ${from})`);
-  const payload = { from, to, subject, html };
+  const fromEmail = process.env.EMAIL_FROM_ADDRESS || 'noreply@visitorpass.in';
+  const fromName = process.env.EMAIL_FROM_NAME || 'VMS System';
+  console.log(`[Email] Sending "${subject}" to ${to} via Brevo`);
+
+  const email = new Brevo.SendSmtpEmail();
+  email.sender = { name: fromName, email: fromEmail };
+  email.to = [{ email: to }];
+  email.subject = subject;
+  email.htmlContent = html;
   if (attachments.length) {
-    payload.attachments = attachments.map(a => ({
-      filename: a.filename,
-      content: require('fs').readFileSync(a.path),
+    email.attachment = attachments.map(a => ({
+      name: a.filename,
+      content: require('fs').readFileSync(a.path).toString('base64'),
     }));
   }
-  const { data, error } = await getResend().emails.send(payload);
-  if (error) {
-    console.error('[Email] Resend error:', JSON.stringify(error));
-    throw new Error(error.message);
+
+  try {
+    const result = await getClient().sendTransacEmail(email);
+    console.log('[Email] Sent successfully, messageId:', result?.body?.messageId);
+  } catch (err) {
+    console.error('[Email] Brevo error:', err?.response?.body || err.message);
+    throw new Error(err?.response?.body?.message || err.message);
   }
-  console.log('[Email] Sent successfully, id:', data?.id);
 };
 
 const sendOTPEmail = async (email, otp) => {
