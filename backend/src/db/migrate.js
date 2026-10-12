@@ -101,6 +101,28 @@ const migrate = async () => {
 
     await client.query('COMMIT');
     console.log('✅ Database migration completed successfully');
+
+    // Seed default data
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash('admin123', 10);
+    await pool.query(
+      `INSERT INTO users (name, email, password, role) VALUES ($1,$2,$3,$4) ON CONFLICT (email) DO NOTHING`,
+      ['Admin User', 'admin@vms.com', hashedPassword, 'admin']
+    );
+    const hosts = [
+      ['Rajesh Kumar', 'rajesh@company.com', '9876543210', 'Engineering', 'Manager'],
+      ['Priya Sharma', 'priya@company.com', '9876543211', 'HR', 'Director'],
+      ['Amit Patel', 'amit@company.com', '9876543212', 'Sales', 'Executive'],
+      ['Sneha Joshi', 'sneha@company.com', '9876543213', 'Finance', 'Manager'],
+      ['Vikram Singh', 'vikram@company.com', '9876543214', 'Operations', 'Head'],
+    ];
+    for (const h of hosts) {
+      await pool.query(
+        `INSERT INTO hosts (name, email, phone, department, designation) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (email) DO NOTHING`,
+        h
+      );
+    }
+    console.log('✅ Seed data ready');
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('❌ Migration failed:', error.message);
