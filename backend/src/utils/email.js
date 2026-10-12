@@ -11,7 +11,11 @@ const getTransporter = () => nodemailer.createTransport({
 });
 
 const sendEmail = async (to, subject, html, attachments = []) => {
-  if (!process.env.SMTP_USER) { console.warn('SMTP not configured'); return; }
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    const err = new Error('SMTP credentials not configured (SMTP_USER or SMTP_PASS missing)');
+    console.error('[Email]', err.message);
+    throw err;
+  }
   await getTransporter().sendMail({
     from: `"VMS System" <${process.env.SMTP_USER}>`,
     to, subject, html, attachments
