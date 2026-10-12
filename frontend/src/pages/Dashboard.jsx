@@ -6,14 +6,14 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, L
 import { format } from 'date-fns';
 
 const StatCard = ({ icon: Icon, label, value, color }) => (
-  <div className="bg-white rounded-xl p-6 shadow-sm">
-    <div className="flex items-center gap-4">
-      <div className={`p-3 rounded-lg ${color}`}>
-        <Icon size={24} className="text-white" />
+  <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm">
+    <div className="flex items-center gap-3">
+      <div className={`p-2 md:p-3 rounded-lg ${color} shrink-0`}>
+        <Icon size={20} className="text-white" />
       </div>
       <div>
-        <p className="text-gray-500 text-sm">{label}</p>
-        <p className="text-2xl font-bold">{value}</p>
+        <p className="text-gray-500 text-xs md:text-sm">{label}</p>
+        <p className="text-xl md:text-2xl font-bold">{value}</p>
       </div>
     </div>
   </div>
@@ -55,21 +55,21 @@ export default function Dashboard() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <h1 className="text-xl md:text-2xl font-bold">Dashboard</h1>
         <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm ${connected ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
           {connected ? <FiWifi size={14} /> : <FiWifiOff size={14} />}
           {connected ? 'Live' : 'Offline'}
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
         <StatCard icon={FiUserCheck} label="Active Visitors" value={stats.activeVisitors} color="bg-green-500" />
         <StatCard icon={FiUserPlus} label="Today's Visitors" value={stats.todayVisitors} color="bg-blue-500" />
         <StatCard icon={FiUsers} label="Total Visitors" value={stats.totalVisitors} color="bg-purple-500" />
         <StatCard icon={FiHome} label="Total Hosts" value={stats.totalHosts} color="bg-orange-500" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-4 md:mb-6">
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <h2 className="text-lg font-semibold mb-4">Visits by Department (Last 30 Days)</h2>
           <ResponsiveContainer width="100%" height={250}>
@@ -95,8 +95,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl p-6 shadow-sm">
-        <h2 className="text-lg font-semibold mb-4">Recent Visits</h2>
+      <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm">
+        <h2 className="text-base md:text-lg font-semibold mb-4">Recent Visits</h2>
         <div className="space-y-3">
           {recent.map((visit) => (
             <div key={visit.id} className="flex justify-between items-center py-2 border-b last:border-0">

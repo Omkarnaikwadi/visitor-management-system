@@ -34,7 +34,7 @@ export default function PreRegister() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div>
-        <h1 className="text-2xl font-bold mb-6">Pre-Register Visitor</h1>
+        <h1 className="text-xl md:text-2xl font-bold mb-6">Pre-Register Visitor</h1>
         <form onSubmit={handleSubmit} className="bg-white rounded-xl p-6 shadow-sm space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">Visitor Name *</label>
@@ -42,9 +42,7 @@ export default function PreRegister() {
               onChange={(e) => setForm({ ...form, visitor_name: e.target.value })}
               className={inputClass} required />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Phone *</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <input type="tel" value={form.visitor_phone}
                 onChange={(e) => setForm({ ...form, visitor_phone: e.target.value })}
                 className={inputClass} required />
@@ -99,7 +97,7 @@ export default function PreRegister() {
       </div>
 
       <div>
-        <h2 className="text-2xl font-bold mb-6">Upcoming Visits</h2>
+        <h2 className="text-xl md:text-2xl font-bold mb-6">Upcoming Visits</h2>
         <div className="space-y-3">
           {preRegs.map((pr) => (
             <div key={pr.id} className="bg-white rounded-xl p-4 shadow-sm">
