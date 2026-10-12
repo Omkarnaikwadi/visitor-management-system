@@ -1,11 +1,13 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
-// Support both DATABASE_URL (Render) and individual vars (local)
 const pool = process.env.DATABASE_URL
   ? new Pool({
       connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }
+      ssl: { rejectUnauthorized: false },
+      max: 10,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 5000,
     })
   : new Pool({
       host: process.env.DB_HOST,

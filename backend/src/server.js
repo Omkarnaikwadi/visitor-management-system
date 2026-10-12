@@ -3,12 +3,19 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const http = require('http');
+const fs = require('fs');
 const routes = require('./routes');
 const { initSocket } = require('./config/socket');
 const { initRedis } = require('./config/redis');
 
 const app = express();
 const server = http.createServer(app);
+
+// Ensure upload directories exist (recreated after Render redeploy)
+['uploads/photos', 'uploads/gatepasses'].forEach((dir) => {
+  const full = path.join(__dirname, '..', dir);
+  if (!fs.existsSync(full)) fs.mkdirSync(full, { recursive: true });
+});
 
 // Initialize Socket.io
 initSocket(server);

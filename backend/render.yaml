@@ -15,6 +15,18 @@ services:
         fromDatabase:
           name: vms-db
           property: connectionString
+      - key: FRONTEND_URL
+        value: https://your-app.netlify.app
+      - key: BACKEND_URL
+        value: https://your-backend.onrender.com
+      - key: REDIS_ENABLED
+        value: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_WHATSAPP_FROM
+        value: "+14155238886"
 
 databases:
   - name: vms-db
