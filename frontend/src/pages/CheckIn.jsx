@@ -25,12 +25,12 @@ export default function CheckIn() {
   }, []);
 
   const handleSendOTP = async () => {
-    if (form.phone.length < 10) return toast.error('Enter a valid phone number first');
+    if (!form.email || !form.email.includes('@')) return toast.error('Enter a valid email address first');
     setOtpLoading(true);
     try {
-      await otpAPI.send(form.phone);
+      await otpAPI.send(form.email);
       setOtpStep(true);
-      toast.success('OTP sent to your WhatsApp!');
+      toast.success('OTP sent to your email!');
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to send OTP');
     } finally {
@@ -42,10 +42,10 @@ export default function CheckIn() {
     if (otp.length !== 6) return toast.error('Enter the 6-digit OTP');
     setOtpLoading(true);
     try {
-      await otpAPI.verify(form.phone, otp);
+      await otpAPI.verify(form.email, otp);
       setOtpVerified(true);
       setOtpStep(false);
-      toast.success('Phone verified!');
+      toast.success('Email verified!');
     } catch (err) {
       toast.error(err.response?.data?.error || 'Invalid OTP');
     } finally {
@@ -192,15 +192,15 @@ export default function CheckIn() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Phone *</label>
+              <label className="block text-sm font-medium mb-1">Email *</label>
               <div className="flex gap-2">
-                <input type="tel" value={form.phone} onChange={(e) => {
-                    setForm({ ...form, phone: e.target.value });
+                <input type="email" value={form.email} onChange={(e) => {
+                    setForm({ ...form, email: e.target.value });
                     setOtpVerified(false);
                     setOtpStep(false);
                     setOtp('');
                   }}
-                  onBlur={handlePhoneBlur} className={inputClass} required />
+                  className={inputClass} required />
                 {!otpVerified && (
                   <button type="button" onClick={handleSendOTP} disabled={otpLoading}
                     className="px-3 py-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-200 text-sm whitespace-nowrap disabled:opacity-50">
@@ -226,6 +226,9 @@ export default function CheckIn() {
                   </button>
                 </div>
               )}
+              {otpVerified && (
+                <p className="text-xs text-green-600 mt-1">✓ Gate pass will be sent to this email after check-in</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Name *</label>
@@ -236,9 +239,9 @@ export default function CheckIn() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Email</label>
-              <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className={inputClass} />
+              <label className="block text-sm font-medium mb-1">Phone</label>
+              <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                onBlur={handlePhoneBlur} className={inputClass} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Company</label>
@@ -284,7 +287,7 @@ export default function CheckIn() {
 
           <button type="submit" disabled={!otpVerified}
             className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed">
-            {otpVerified ? 'Check In Visitor' : 'Verify Phone to Check In'}
+            {otpVerified ? 'Check In Visitor' : 'Verify Email to Check In'}
           </button>
         </form>
       )}

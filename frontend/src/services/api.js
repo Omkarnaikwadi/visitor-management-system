@@ -80,8 +80,8 @@ export const getPhotoUrl = (photoUrl) => {
 };
 
 export const otpAPI = {
-  send: (phone) => api.post('/otp/send', { phone }),
-  verify: (phone, otp) => api.post('/otp/verify', { phone, otp }),
+  send: (email) => api.post('/otp/send', { email }),
+  verify: (email, otp) => api.post('/otp/verify', { email, otp }),
 };
 
 export default api;
