@@ -28,6 +28,18 @@ router.get('/receptionists', auth, adminOnly, authController.getReceptionists);
 router.patch('/receptionists/:id/toggle', auth, adminOnly, authController.toggleActive);
 router.patch('/receptionists/:id/reset-password', auth, adminOnly, authController.resetPassword);
 
+// TEMP: one-time migration endpoint — REMOVE AFTER USE
+router.get('/run-migration', async (req, res) => {
+  try {
+    const pool = require('../config/db');
+    await pool.query(`ALTER TABLE hosts ADD COLUMN IF NOT EXISTS fcm_token TEXT`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS fcm_token TEXT`);
+    res.json({ message: 'Migration applied successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // OTP routes (public - no auth needed)
 router.post('/otp/send', otpController.sendOTPHandler);
 router.post('/otp/verify', otpController.verifyOTPHandler);
