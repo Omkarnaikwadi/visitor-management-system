@@ -54,9 +54,9 @@ const checkIn = async (req, res) => {
 
     // Create visit
     const visitResult = await client.query(
-      `INSERT INTO visits (visitor_id, host_id, purpose, badge_number, status, parking_slot, created_by)
-       VALUES ($1,$2,$3,$4,'checked_in',$5,$6) RETURNING *`,
-      [visitorId, host_id, purpose, badgeNumber, slot?.slot_number || null, req.user.id]
+      `INSERT INTO visits (visitor_id, host_id, purpose, badge_number, status, parking_slot, created_by, photo_url)
+       VALUES ($1,$2,$3,$4,'checked_in',$5,$6,$7) RETURNING *`,
+      [visitorId, host_id, purpose, badgeNumber, slot?.slot_number || null, req.user.id, photoUrl]
     );
     const visit = visitResult.rows[0];
 
@@ -234,7 +234,8 @@ const getActiveVisits = async (req, res) => {
     const cached = await cache.get('active_visits');
     if (cached) return res.json(cached);
     const result = await pool.query(`
-      SELECT v.*, vis.name as visitor_name, vis.phone as visitor_phone, vis.company, vis.photo_url,
+      SELECT v.*, vis.name as visitor_name, vis.phone as visitor_phone, vis.company,
+             COALESCE(v.photo_url, vis.photo_url) as photo_url,
              h.name as host_name, h.department
       FROM visits v
       JOIN visitors vis ON v.visitor_id = vis.id
@@ -253,7 +254,8 @@ const getAllVisits = async (req, res) => {
   try {
     const { start_date, end_date, status } = req.query;
     let query = `
-      SELECT v.*, vis.name as visitor_name, vis.phone as visitor_phone, vis.company, vis.photo_url,
+      SELECT v.*, vis.name as visitor_name, vis.phone as visitor_phone, vis.company,
+             COALESCE(v.photo_url, vis.photo_url) as photo_url,
              h.name as host_name, h.department
       FROM visits v JOIN visitors vis ON v.visitor_id = vis.id JOIN hosts h ON v.host_id = h.id WHERE 1=1
     `;
@@ -273,7 +275,8 @@ const getVisitById = async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT v.*, vis.name as visitor_name, vis.phone as visitor_phone, vis.email as visitor_email,
-             vis.company, vis.photo_url, h.name as host_name, h.department, h.email as host_email
+             vis.company, COALESCE(v.photo_url, vis.photo_url) as photo_url,
+             h.name as host_name, h.department, h.email as host_email
       FROM visits v JOIN visitors vis ON v.visitor_id = vis.id JOIN hosts h ON v.host_id = h.id
       WHERE v.id = $1
     `, [req.params.id]);

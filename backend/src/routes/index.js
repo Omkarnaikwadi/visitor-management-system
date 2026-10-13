@@ -66,4 +66,15 @@ router.get('/reports/csv', auth, reportController.exportCSV);
 router.get('/reports/pdf', auth, reportController.exportPDF);
 router.get('/reports/departments', auth, reportController.getDepartments);
 
+// TEMP: one-time migration — remove after running
+router.get('/run-migration', async (req, res) => {
+  const pool = require('../config/db');
+  try {
+    await pool.query(`ALTER TABLE visits ADD COLUMN IF NOT EXISTS photo_url TEXT`);
+    res.json({ success: true, message: 'photo_url column added to visits' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = router;
