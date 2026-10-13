@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { visitorAPI } from '../services/api';
+import { visitorAPI, getPhotoUrl } from '../services/api';
 import { format } from 'date-fns';
 import { FiFilter, FiSearch, FiCalendar, FiUser, FiBriefcase } from 'react-icons/fi';
 
@@ -90,9 +90,13 @@ export default function AllVisits() {
                   <tr key={v.id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
-                          {v.visitor_name?.charAt(0)}
-                        </div>
+                        {v.photo_url ? (
+                          <img src={getPhotoUrl(v.photo_url)} alt="" className="w-8 h-8 rounded-lg object-cover shrink-0" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                            {v.visitor_name?.charAt(0)}
+                          </div>
+                        )}
                         <div>
                           <p className="text-sm font-semibold text-gray-800">{v.visitor_name}</p>
                           <p className="text-xs text-gray-400">{v.company || '—'}</p>
@@ -143,9 +147,13 @@ export default function AllVisits() {
                 <div className="p-4">
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-sm font-bold">
-                        {v.visitor_name?.charAt(0)}
-                      </div>
+                      {v.photo_url ? (
+                          <img src={getPhotoUrl(v.photo_url)} alt="" className="w-9 h-9 rounded-xl object-cover shrink-0" />
+                        ) : (
+                          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-sm font-bold">
+                            {v.visitor_name?.charAt(0)}
+                          </div>
+                        )}
                       <div>
                         <p className="font-semibold text-gray-800 text-sm">{v.visitor_name}</p>
                         <p className="text-xs text-gray-400">{v.company || '—'}</p>
