@@ -300,6 +300,7 @@ export default function CheckIn() {
               {otpVerified && !fastTrack && <p className="text-xs text-emerald-600 mt-1.5 flex items-center gap-1"><FiCheckCircle size={11} /> Gate pass will be sent to this email</p>}
               {fastTrack && <p className="text-xs text-blue-600 mt-1.5 flex items-center gap-1"><FiZap size={11} /> Returning visitor — OTP skipped automatically</p>}
             </div>
+            </div>
 
             {/* Name + Phone */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
