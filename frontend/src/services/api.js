@@ -40,11 +40,19 @@ export const visitorAPI = {
   getById: (id) => api.get(`/visits/${id}`),
 };
 
+export const receptionistAPI = {
+  getAll: () => api.get('/receptionists'),
+  create: (data) => api.post('/auth/register', data),
+  toggleActive: (id) => api.patch(`/receptionists/${id}/toggle`),
+  resetPassword: (id, password) => api.patch(`/receptionists/${id}/reset-password`, { password }),
+};
+
 export const hostAPI = {
   getAll: () => api.get('/hosts'),
   create: (data) => api.post('/hosts', data),
   update: (id, data) => api.put(`/hosts/${id}`, data),
   delete: (id) => api.delete(`/hosts/${id}`),
+  saveFcmToken: (id, fcm_token) => api.post(`/hosts/${id}/fcm-token`, { fcm_token }),
 };
 
 export const preRegAPI = {

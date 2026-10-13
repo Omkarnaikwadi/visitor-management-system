@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { hostAPI } from '../services/api';
+import { requestFCMToken } from '../utils/firebase';
 import toast from 'react-hot-toast';
-import { FiPlus, FiEdit2, FiTrash2, FiMail, FiPhone, FiBriefcase, FiX, FiUsers } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiMail, FiPhone, FiBriefcase, FiX, FiUsers, FiBell, FiBellOff } from 'react-icons/fi';
 
 const deptColors = ['bg-blue-100 text-blue-700', 'bg-purple-100 text-purple-700', 'bg-emerald-100 text-emerald-700',
   'bg-orange-100 text-orange-700', 'bg-rose-100 text-rose-700', 'bg-teal-100 text-teal-700'];
@@ -39,6 +40,22 @@ export default function Hosts() {
     await hostAPI.delete(id); toast.success('Host deactivated'); fetchHosts();
   };
   const openAdd = () => { setShowModal(true); setEditing(null); setForm({ name: '', email: '', phone: '', department: '', designation: '' }); };
+
+  const handleRegisterFCM = async (host) => {
+    toast.loading('Requesting notification permission...', { id: 'fcm' });
+    const token = await requestFCMToken();
+    if (!token) {
+      toast.error('Permission denied or Firebase not configured', { id: 'fcm' });
+      return;
+    }
+    try {
+      await hostAPI.saveFcmToken(host.id, token);
+      toast.success(`Push notifications enabled for ${host.name}`, { id: 'fcm' });
+      fetchHosts();
+    } catch {
+      toast.error('Failed to save FCM token', { id: 'fcm' });
+    }
+  };
 
   const inputClass = "w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm transition-all";
 
@@ -94,6 +111,11 @@ export default function Hosts() {
                   <div className="flex gap-1">
                     <button onClick={() => handleEdit(h)} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"><FiEdit2 size={15} /></button>
                     <button onClick={() => handleDelete(h.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><FiTrash2 size={15} /></button>
+                    <button onClick={() => handleRegisterFCM(h)}
+                      title={h.fcm_token ? 'Push notifications enabled — click to re-register' : 'Enable push notifications'}
+                      className={`p-2 rounded-lg transition-colors ${h.fcm_token ? 'text-green-600 hover:bg-green-50' : 'text-gray-400 hover:bg-gray-50'}`}>
+                      {h.fcm_token ? <FiBell size={15} /> : <FiBellOff size={15} />}
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -132,6 +154,11 @@ export default function Hosts() {
               <div className="flex gap-1">
                 <button onClick={() => handleEdit(h)} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg"><FiEdit2 size={15} /></button>
                 <button onClick={() => handleDelete(h.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><FiTrash2 size={15} /></button>
+                <button onClick={() => handleRegisterFCM(h)}
+                  title={h.fcm_token ? 'Push notifications enabled' : 'Enable push notifications'}
+                  className={`p-2 rounded-lg transition-colors ${h.fcm_token ? 'text-green-600 hover:bg-green-50' : 'text-gray-400 hover:bg-gray-50'}`}>
+                  {h.fcm_token ? <FiBell size={15} /> : <FiBellOff size={15} />}
+                </button>
               </div>
             </div>
             <div className="mt-3 space-y-1.5">

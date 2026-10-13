@@ -35,6 +35,17 @@ export default function Layout({ children }) {
 
   const isActive = (path) => location.pathname === path;
 
+  const navItems = [
+    { path: '/',              icon: FiHome,     label: 'Dashboard' },
+    { path: '/checkin',       icon: FiUserPlus, label: 'Check In' },
+    { path: '/active',        icon: FiUsers,    label: 'Active' },
+    { path: '/visits',        icon: FiList,     label: 'Visits' },
+    { path: '/hosts',         icon: FiUsers,    label: 'Hosts' },
+    { path: '/pre-register',  icon: FiCalendar, label: 'Pre-Reg' },
+    { path: '/reports',       icon: FiFileText, label: 'Reports' },
+    ...(user?.role === 'admin' ? [{ path: '/receptionists', icon: FiShield, label: 'Staff' }] : []),
+  ];
+
   return (
     <div className="flex h-screen bg-gray-50" style={{ height: '100dvh' }}>
 

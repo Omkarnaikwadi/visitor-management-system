@@ -12,6 +12,7 @@ import AllVisits from './pages/AllVisits';
 import Hosts from './pages/Hosts';
 import PreRegister from './pages/PreRegister';
 import Reports from './pages/Reports';
+import Receptionists from './pages/Receptionists';
 
 const Loader = () => (
   <div className="flex h-screen items-center justify-center bg-gray-50" style={{ height: '100dvh' }}>
@@ -31,6 +32,14 @@ const ProtectedRoute = ({ children }) => {
   return <Layout>{children}</Layout>;
 };
 
+const AdminRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) return <Loader />;
+  if (!user) return <Navigate to="/login" />;
+  if (user.role !== 'admin') return <Navigate to="/" />;
+  return <Layout>{children}</Layout>;
+};
+
 function AppRoutes() {
   const { user, loading } = useAuth();
   if (loading) return <Loader />;
@@ -45,6 +54,7 @@ function AppRoutes() {
       <Route path="/hosts" element={<ProtectedRoute><Hosts /></ProtectedRoute>} />
       <Route path="/pre-register" element={<ProtectedRoute><PreRegister /></ProtectedRoute>} />
       <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+      <Route path="/receptionists" element={<AdminRoute><Receptionists /></AdminRoute>} />
     </Routes>
   );
 }

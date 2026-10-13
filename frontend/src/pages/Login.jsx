@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../services/api';
 import toast from 'react-hot-toast';
-import { FiMail, FiLock, FiEye, FiEyeOff, FiLogIn, FiUser, FiPhone, FiUserPlus } from 'react-icons/fi';
-import { MdSecurity } from 'react-icons/md';
+import { FiMail, FiLock, FiEye, FiEyeOff, FiLogIn, FiUser, FiPhone, FiUserPlus, FiShield } from 'react-icons/fi';
 
 const FloatingShape = ({ className }) => (
   <div className={`absolute rounded-3xl opacity-20 ${className}`} />
@@ -49,7 +48,6 @@ export default function Login() {
   const [sName, setSName]       = useState('');
   const [sEmail, setSEmail]     = useState('');
   const [sPhone, setSPhone]     = useState('');
-  const [sRole, setSRole]       = useState('receptionist');
   const [sPass, setSPass]       = useState('');
   const [sConfirm, setSConfirm] = useState('');
 
@@ -99,7 +97,7 @@ export default function Login() {
     if (sPass.length < 6) return toast.error('Password must be at least 6 characters');
     setLoading(true);
     try {
-      const res = await authAPI.selfRegister({ name: sName, email: sEmail, phone: sPhone, password: sPass, role: sRole });
+      const res = await authAPI.selfRegister({ name: sName, email: sEmail, phone: sPhone, password: sPass });
       localStorage.setItem('token', res.data.token);
       toast.success(`Account created! Welcome, ${res.data.user.name}`);
       navigate('/');
@@ -132,7 +130,7 @@ export default function Login() {
 
           <div className="relative z-10 text-center text-white">
             <div className="w-20 h-20 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-              <MdSecurity size={44} className="text-white" />
+              <FiShield size={44} className="text-white" />
             </div>
             <h2 className="text-3xl font-bold mb-2 tracking-wide">VMS</h2>
             <p className="text-indigo-100 text-sm font-medium tracking-widest uppercase mb-8">
@@ -185,7 +183,7 @@ export default function Login() {
             <div className={`transition-all duration-300 ${isLogin ? 'opacity-100 translate-x-0 pointer-events-auto' : 'opacity-0 -translate-x-8 pointer-events-none absolute inset-0'}`}>
               <div className="text-center mb-7">
                 <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-sm">
-                  <MdSecurity size={30} className="text-indigo-600" />
+                  <FiShield size={30} className="text-indigo-600" />
                 </div>
                 <h1 className="text-3xl font-extrabold text-indigo-600 tracking-wide">LOGIN</h1>
                 <p className="text-gray-400 text-sm mt-1">Sign in to your account</p>
@@ -240,7 +238,7 @@ export default function Login() {
                   <FiUserPlus size={26} className="text-indigo-600" />
                 </div>
                 <h1 className="text-3xl font-extrabold text-indigo-600 tracking-wide">SIGN UP</h1>
-                <p className="text-gray-400 text-sm mt-1">Create your VMS account</p>
+                <p className="text-gray-400 text-sm mt-1">Create your receptionist account</p>
               </div>
 
               <form onSubmit={handleSignup} className="space-y-4">
@@ -255,17 +253,6 @@ export default function Login() {
                 <InputField icon={FiPhone} name="sPhone" placeholder="Phone Number" type="tel"
                   value={sPhone} onChange={(e) => setSPhone(e.target.value)}
                   onFocus={setFocused} onBlur={setFocused} focused={focused} />
-
-                {/* Role selector */}
-                <div className={`flex items-center border-b-2 transition-colors duration-200 pb-1 ${focused === 'sRole' ? 'border-indigo-500' : 'border-gray-200'}`}>
-                  <MdSecurity className={`mr-3 flex-shrink-0 transition-colors duration-200 ${focused === 'sRole' ? 'text-indigo-500' : 'text-gray-400'}`} size={17} />
-                  <select value={sRole} onChange={(e) => setSRole(e.target.value)}
-                    onFocus={() => setFocused('sRole')} onBlur={() => setFocused('')}
-                    className="flex-1 outline-none bg-transparent text-gray-700 text-sm py-1 cursor-pointer">
-                    <option value="receptionist">Receptionist</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                </div>
 
                 <InputField icon={FiLock} name="sPass" placeholder="Password"
                   type={showPass ? 'text' : 'password'}
@@ -288,12 +275,6 @@ export default function Login() {
                       {showConfirm ? <FiEyeOff size={15} /> : <FiEye size={15} />}
                     </button>
                   } />
-
-                {sRole === 'admin' && (
-                  <p className="text-xs text-amber-500 bg-amber-50 rounded-lg px-3 py-2">
-                    ⚠️ Admin role is only allowed if no admin account exists yet.
-                  </p>
-                )}
 
                 <button type="submit" disabled={loading}
                   className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold text-sm py-2.5 rounded-full shadow-md transition-all duration-200 disabled:opacity-60 mt-2">
