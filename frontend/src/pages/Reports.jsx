@@ -1,76 +1,60 @@
 import { useState, useEffect } from 'react';
-import { hostAPI } from '../services/api';
-import { reportAPI } from '../services/api';
-import { FiDownload, FiFileText, FiFile } from 'react-icons/fi';
+import { hostAPI, reportAPI } from '../services/api';
+import { FiDownload, FiFileText, FiFile, FiFilter, FiInfo } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 export default function Reports() {
   const [hosts, setHosts] = useState([]);
   const [departments, setDepartments] = useState([]);
-  const [filters, setFilters] = useState({
-    start_date: '',
-    end_date: '',
-    status: '',
-    department: '',
-    host_id: ''
-  });
+  const [filters, setFilters] = useState({ start_date: '', end_date: '', status: '', department: '', host_id: '' });
 
   useEffect(() => {
     hostAPI.getAll().then((res) => setHosts(res.data));
     reportAPI.getDepartments().then((res) => setDepartments(res.data));
   }, []);
 
-  const handleExportCSV = () => {
-    const cleanFilters = Object.fromEntries(
-      Object.entries(filters).filter(([_, v]) => v !== '')
-    );
-    reportAPI.exportCSV(cleanFilters);
-    toast.success('CSV download started');
-  };
+  const cleanFilters = () => Object.fromEntries(Object.entries(filters).filter(([, v]) => v !== ''));
 
-  const handleExportPDF = () => {
-    const cleanFilters = Object.fromEntries(
-      Object.entries(filters).filter(([_, v]) => v !== '')
-    );
-    reportAPI.exportPDF(cleanFilters);
-    toast.success('PDF download started');
-  };
+  const handleExportCSV = () => { reportAPI.exportCSV(cleanFilters()); toast.success('CSV download started'); };
+  const handleExportPDF = () => { reportAPI.exportPDF(cleanFilters()); toast.success('PDF download started'); };
 
-  const inputClass = "w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none";
+  const set = (k, v) => setFilters(f => ({ ...f, [k]: v }));
+  const inputClass = "w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white transition-all";
+
+  const activeFilters = Object.values(filters).filter(Boolean).length;
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Reports & Export</h1>
+    <div className="max-w-4xl mx-auto space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Reports & Export</h1>
+        <p className="text-sm text-gray-500 mt-0.5">Filter and export visitor data in your preferred format</p>
+      </div>
 
-      <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-        <h2 className="text-lg font-semibold mb-4">Filter Options</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+      {/* Filters */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
+          <div className="flex items-center gap-2">
+            <FiFilter size={15} className="text-gray-400" />
+            <span className="text-sm font-semibold text-gray-700">Filter Options</span>
+          </div>
+          {activeFilters > 0 && (
+            <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-full">
+              {activeFilters} active
+            </span>
+          )}
+        </div>
+        <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Start Date</label>
-            <input
-              type="date"
-              value={filters.start_date}
-              onChange={(e) => setFilters({ ...filters, start_date: e.target.value })}
-              className={inputClass}
-            />
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">Start Date</label>
+            <input type="date" value={filters.start_date} onChange={(e) => set('start_date', e.target.value)} className={inputClass} />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">End Date</label>
-            <input
-              type="date"
-              value={filters.end_date}
-              onChange={(e) => setFilters({ ...filters, end_date: e.target.value })}
-              className={inputClass}
-            />
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">End Date</label>
+            <input type="date" value={filters.end_date} onChange={(e) => set('end_date', e.target.value)} className={inputClass} />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Status</label>
-            <select
-              value={filters.status}
-              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-              className={inputClass}
-            >
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">Status</label>
+            <select value={filters.status} onChange={(e) => set('status', e.target.value)} className={inputClass}>
               <option value="">All Statuses</option>
               <option value="checked_in">Checked In</option>
               <option value="checked_out">Checked Out</option>
@@ -78,86 +62,87 @@ export default function Reports() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Department</label>
-            <select
-              value={filters.department}
-              onChange={(e) => setFilters({ ...filters, department: e.target.value })}
-              className={inputClass}
-            >
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">Department</label>
+            <select value={filters.department} onChange={(e) => set('department', e.target.value)} className={inputClass}>
               <option value="">All Departments</option>
-              {departments.map((dept) => (
-                <option key={dept} value={dept}>{dept}</option>
-              ))}
+              {departments.map((d) => <option key={d} value={d}>{d}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Host</label>
-            <select
-              value={filters.host_id}
-              onChange={(e) => setFilters({ ...filters, host_id: e.target.value })}
-              className={inputClass}
-            >
+            <label className="block text-xs font-semibold text-gray-500 mb-1.5">Host</label>
+            <select value={filters.host_id} onChange={(e) => set('host_id', e.target.value)} className={inputClass}>
               <option value="">All Hosts</option>
-              {hosts.map((h) => (
-                <option key={h.id} value={h.id}>{h.name}</option>
-              ))}
+              {hosts.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
             </select>
           </div>
-        </div>
-
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <span>Tip:</span>
-          <span>Leave filters empty to export all records</span>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl p-6 shadow-sm">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-green-100 rounded-lg">
-              <FiFileText size={24} className="text-green-600" />
+          {activeFilters > 0 && (
+            <div className="flex items-end">
+              <button onClick={() => setFilters({ start_date: '', end_date: '', status: '', department: '', host_id: '' })}
+                className="w-full px-4 py-2.5 border border-gray-200 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors">
+                Clear Filters
+              </button>
             </div>
-            <div>
-              <h3 className="font-semibold">Export as CSV</h3>
-              <p className="text-sm text-gray-500">Spreadsheet format for Excel/Google Sheets</p>
-            </div>
-          </div>
-          <button
-            onClick={handleExportCSV}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
-          >
-            <FiDownload /> Download CSV
-          </button>
-        </div>
-
-        <div className="bg-white rounded-xl p-6 shadow-sm">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-red-100 rounded-lg">
-              <FiFile size={24} className="text-red-600" />
-            </div>
-            <div>
-              <h3 className="font-semibold">Export as PDF</h3>
-              <p className="text-sm text-gray-500">Printable report format</p>
-            </div>
-          </div>
-          <button
-            onClick={handleExportPDF}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700"
-          >
-            <FiDownload /> Download PDF
-          </button>
+          )}
         </div>
       </div>
 
-      <div className="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-4">
-        <h3 className="font-semibold text-blue-800 mb-2">Report Contents</h3>
-        <ul className="text-sm text-blue-700 space-y-1">
-          <li>• Visitor details (name, phone, email, company)</li>
-          <li>• Host information and department</li>
-          <li>• Visit purpose and badge number</li>
-          <li>• Check-in and check-out timestamps</li>
-          <li>• Visit status</li>
-        </ul>
+      {/* Export cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+          <div className="h-1 bg-gradient-to-r from-emerald-400 to-teal-500" />
+          <div className="p-6">
+            <div className="flex items-center gap-4 mb-5">
+              <div className="p-3 bg-emerald-50 rounded-xl">
+                <FiFileText size={22} className="text-emerald-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800">Export as CSV</h3>
+                <p className="text-xs text-gray-400 mt-0.5">For Excel / Google Sheets</p>
+              </div>
+            </div>
+            <button onClick={handleExportCSV}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 font-medium text-sm transition-all active:scale-95 shadow-sm">
+              <FiDownload size={16} /> Download CSV
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+          <div className="h-1 bg-gradient-to-r from-rose-400 to-red-500" />
+          <div className="p-6">
+            <div className="flex items-center gap-4 mb-5">
+              <div className="p-3 bg-red-50 rounded-xl">
+                <FiFile size={22} className="text-red-500" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800">Export as PDF</h3>
+                <p className="text-xs text-gray-400 mt-0.5">Printable report format</p>
+              </div>
+            </div>
+            <button onClick={handleExportPDF}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 font-medium text-sm transition-all active:scale-95 shadow-sm">
+              <FiDownload size={16} /> Download PDF
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Info */}
+      <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <FiInfo size={15} className="text-indigo-500" />
+          <h3 className="text-sm font-semibold text-indigo-800">Report Contents</h3>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+          {['Visitor name, phone, email & company', 'Host information and department',
+            'Visit purpose and badge number', 'Check-in and check-out timestamps',
+            'Visit status', 'Parking slot (if assigned)'].map((item) => (
+            <div key={item} className="flex items-center gap-2 text-sm text-indigo-700">
+              <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
+              {item}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

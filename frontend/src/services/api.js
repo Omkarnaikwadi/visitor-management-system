@@ -27,12 +27,14 @@ export const authAPI = {
   register: (data) => api.post('/auth/register', data),
   selfRegister: (data) => api.post('/auth/register/self', data),
   profile: () => api.get('/auth/profile'),
+  saveFcmToken: (fcm_token) => api.post('/auth/fcm-token', { fcm_token }),
 };
 
 export const visitorAPI = {
   checkIn: (data) => api.post('/visitors/checkin', data),
   checkOut: (id) => api.put(`/visitors/checkout/${id}`),
   scanQR: (qr_data) => api.post('/visitors/scan-qr', { qr_data }),
+  checkReturning: (email) => api.get('/visitors/returning', { params: { email } }),
   getActive: () => api.get('/visits/active'),
   getAll: (params) => api.get('/visits', { params }),
   getById: (id) => api.get(`/visits/${id}`),

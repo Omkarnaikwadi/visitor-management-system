@@ -113,8 +113,8 @@ export default function Login() {
   const isLogin = mode === 'login';
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <div className="w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden flex min-h-[560px]">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-blue-50 p-4" style={{ minHeight: '100dvh' }}>
+      <div className="w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden flex" style={{ minHeight: 'min(560px, 95dvh)' }}>
 
         {/* ── Left Panel ───────────────────────────────────────────── */}
         <div className="relative hidden md:flex md:w-5/12 bg-gradient-to-br from-indigo-600 via-indigo-500 to-blue-400 flex-col items-center justify-center p-10 overflow-hidden">
@@ -162,7 +162,7 @@ export default function Login() {
         </div>
 
         {/* ── Right Panel ──────────────────────────────────────────── */}
-        <div className="flex-1 flex flex-col justify-center px-8 md:px-12 py-8 overflow-hidden">
+        <div className="flex-1 flex flex-col justify-center px-6 sm:px-10 md:px-12 py-6 overflow-y-auto">
 
           {/* Mobile mode toggle */}
           <div className="flex md:hidden justify-center mb-6">

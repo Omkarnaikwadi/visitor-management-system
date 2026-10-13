@@ -13,17 +13,27 @@ import Hosts from './pages/Hosts';
 import PreRegister from './pages/PreRegister';
 import Reports from './pages/Reports';
 
+const Loader = () => (
+  <div className="flex h-screen items-center justify-center bg-gray-50" style={{ height: '100dvh' }}>
+    <div className="flex flex-col items-center gap-4">
+      <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+        <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      </div>
+      <div className="w-6 h-6 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+    </div>
+  </div>
+);
+
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  if (loading) return <div className="flex h-screen items-center justify-center">Loading...</div>;
+  if (loading) return <Loader />;
   if (!user) return <Navigate to="/login" />;
   return <Layout>{children}</Layout>;
 };
 
 function AppRoutes() {
   const { user, loading } = useAuth();
-  
-  if (loading) return <div className="flex h-screen items-center justify-center">Loading...</div>;
+  if (loading) return <Loader />;
 
   return (
     <Routes>
@@ -46,7 +56,13 @@ export default function App() {
         <SocketProvider>
           <NotificationListener />
           <AppRoutes />
-          <Toaster position="top-right" />
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              duration: 3500,
+              style: { borderRadius: '12px', fontSize: '13px', fontWeight: '500', maxWidth: '360px' },
+            }}
+          />
         </SocketProvider>
       </AuthProvider>
     </BrowserRouter>
