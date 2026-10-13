@@ -82,6 +82,8 @@ const checkIn = async (req, res) => {
 
     const hostResult = await client.query('SELECT email, name, department, fcm_token FROM hosts WHERE id=$1', [host_id]);
     const host = hostResult.rows[0];
+    console.log('[CheckIn] Host found:', host?.name);
+    console.log('[CheckIn] Host fcm_token present:', !!host?.fcm_token);
 
     await client.query('COMMIT');
 
