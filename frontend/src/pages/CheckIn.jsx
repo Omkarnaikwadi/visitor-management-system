@@ -174,50 +174,62 @@ export default function CheckIn() {
         /* ── Success Screen ── */
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="h-1.5 bg-gradient-to-r from-emerald-400 to-teal-500" />
-          <div className="p-8 text-center">
-            <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <FiCheckCircle size={32} className="text-emerald-600" />
-            </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-1">Check-In Successful!</h2>
-            <p className="text-gray-500 text-sm mb-6">Welcome, <span className="font-semibold text-gray-800">{result.visitor_name}</span></p>
+          <div className="p-6 md:p-8">
 
+            {/* Top success banner */}
+            <div className="flex flex-col items-center text-center mb-6">
+              <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mb-3">
+                <FiCheckCircle size={32} className="text-emerald-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">Check-In Successful!</h2>
+              <p className="text-gray-500 text-sm mt-1">Welcome, <span className="font-semibold text-gray-800">{result.visitor_name}</span></p>
+            </div>
+
+            {/* Visitor photo */}
             {result.photo_url && (
-              <img src={getPhotoUrl(result.photo_url)} alt="Visitor"
-                className="w-20 h-20 rounded-2xl mx-auto mb-5 object-cover ring-4 ring-gray-100" />
+              <div className="flex justify-center mb-5">
+                <img src={getPhotoUrl(result.photo_url)} alt="Visitor"
+                  className="w-20 h-20 rounded-2xl object-cover ring-4 ring-gray-100 shadow-sm" />
+              </div>
             )}
 
-            <div className="grid grid-cols-2 gap-3 mb-5 text-left">
-              <div className="bg-gray-50 rounded-xl p-3">
-                <p className="text-xs text-gray-400 mb-0.5">Badge Number</p>
-                <p className="font-mono font-bold text-gray-800">{result.badge_number}</p>
+            {/* Badge + Host */}
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="bg-gray-50 rounded-xl p-3.5">
+                <p className="text-xs text-gray-400 font-medium mb-1">Badge Number</p>
+                <p className="font-mono font-bold text-gray-800 text-sm">{result.badge_number}</p>
               </div>
-              <div className="bg-gray-50 rounded-xl p-3">
-                <p className="text-xs text-gray-400 mb-0.5">Host</p>
+              <div className="bg-gray-50 rounded-xl p-3.5">
+                <p className="text-xs text-gray-400 font-medium mb-1">Host</p>
                 <p className="font-semibold text-gray-800 text-sm truncate">{result.host_name}</p>
               </div>
             </div>
 
-            {result.parking_slot && (
-              <div className="inline-flex items-center gap-3 bg-blue-50 border border-blue-100 rounded-2xl px-6 py-3.5 mb-5">
-                <span className="text-3xl">🅿️</span>
-                <div className="text-left">
-                  <p className="text-xs text-blue-500 font-semibold">Parking Assigned</p>
-                  <p className="text-2xl font-bold text-blue-700">{result.parking_slot}</p>
+            {/* Parking + QR side by side on md, stacked on mobile */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-5 items-center justify-center">
+              {result.parking_slot && (
+                <div className="flex items-center gap-3 bg-blue-50 border border-blue-100 rounded-2xl px-5 py-4 w-full sm:w-auto">
+                  <span className="text-3xl leading-none">🅿️</span>
+                  <div>
+                    <p className="text-xs text-blue-500 font-semibold uppercase tracking-wide">Parking Assigned</p>
+                    <p className="text-2xl font-bold text-blue-700 leading-tight">{result.parking_slot}</p>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+              {result.qr_code && (
+                <div className="flex flex-col items-center bg-gray-50 rounded-2xl p-3 w-full sm:w-auto">
+                  <p className="text-xs text-gray-400 font-medium mb-2">Gate Pass QR</p>
+                  <img src={result.qr_code} alt="QR Code" className="w-36 h-36" />
+                </div>
+              )}
+            </div>
 
-            {result.qr_code && (
-              <div className="inline-block p-3 bg-gray-50 rounded-2xl mb-5">
-                <img src={result.qr_code} alt="QR Code" className="w-44 h-44" />
-              </div>
-            )}
-
-            <p className="text-xs text-gray-400 mb-6">
-              Gate pass sent to email{result.parking_slot ? ' · Parking slot assigned' : ''}
+            {/* Footer note + button */}
+            <p className="text-xs text-gray-400 text-center mb-4">
+              ✉️ Gate pass sent to email{result.parking_slot ? ' · 🅿️ Parking slot assigned' : ''}
             </p>
             <button onClick={() => setResult(null)}
-              className="px-8 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium text-sm transition-all active:scale-95 shadow-sm">
+              className="w-full py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-semibold text-sm transition-all active:scale-95 shadow-sm">
               New Check-In
             </button>
           </div>

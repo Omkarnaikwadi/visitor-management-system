@@ -37,13 +37,25 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsub = onForegroundMessage((payload) => {
       const { title, body } = payload.notification || {};
-      if (title) toast(
-        <div>
-          <p className="font-semibold text-sm">{title}</p>
-          {body && <p className="text-xs text-gray-600 mt-0.5">{body}</p>}
-        </div>,
-        { icon: '🔔', duration: 6000 }
-      );
+      if (!title) return;
+      toast.custom((t) => (
+        <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} w-80 bg-white rounded-2xl shadow-xl pointer-events-auto overflow-hidden border border-gray-100`}>
+          <div className="h-1 bg-gradient-to-r from-indigo-500 to-purple-500" />
+          <div className="flex items-start gap-3 p-4">
+            <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center shrink-0 text-lg">
+              🔔
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gray-900 truncate">{title}</p>
+              {body && <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{body}</p>}
+            </div>
+            <button onClick={() => toast.dismiss(t.id)}
+              className="text-gray-300 hover:text-gray-500 transition-colors shrink-0 text-lg leading-none mt-0.5">
+              ×
+            </button>
+          </div>
+        </div>
+      ), { duration: 6000 });
     });
     return unsub;
   }, []);

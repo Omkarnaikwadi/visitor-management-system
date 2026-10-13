@@ -39,29 +39,30 @@ export default function AllVisits() {
           <FiFilter size={15} className="text-gray-400" />
           <span className="text-sm font-semibold text-gray-700">Filters</span>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex-1">
             <label className="block text-xs font-medium text-gray-500 mb-1.5">From Date</label>
             <input type="date" value={filters.start_date} onChange={(e) => set('start_date', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none" />
+              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none" />
           </div>
-          <div>
+          <div className="flex-1">
             <label className="block text-xs font-medium text-gray-500 mb-1.5">To Date</label>
             <input type="date" value={filters.end_date} onChange={(e) => set('end_date', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none" />
+              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none" />
           </div>
-          <div>
+          <div className="flex-1">
             <label className="block text-xs font-medium text-gray-500 mb-1.5">Status</label>
             <select value={filters.status} onChange={(e) => set('status', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white">
+              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white">
               <option value="">All Statuses</option>
               <option value="checked_in">Checked In</option>
               <option value="checked_out">Checked Out</option>
             </select>
           </div>
-          <div className="flex items-end">
+          <div className="flex flex-col justify-end">
+            <label className="block text-xs font-medium text-gray-500 mb-1.5 sm:invisible">Search</label>
             <button onClick={fetchVisits}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition-all active:scale-95 shadow-sm">
+              className="flex items-center justify-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition-all active:scale-95 shadow-sm whitespace-nowrap">
               <FiSearch size={14} /> Search
             </button>
           </div>
