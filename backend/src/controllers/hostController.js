@@ -65,4 +65,19 @@ const remove = async (req, res) => {
   }
 };
 
-module.exports = { getAll, getById, create, update, remove };
+const saveFcmToken = async (req, res) => {
+  try {
+    const { fcm_token } = req.body;
+    if (!fcm_token) return res.status(400).json({ error: 'fcm_token is required' });
+    const result = await pool.query(
+      'UPDATE hosts SET fcm_token = $1 WHERE id = $2 RETURNING id, name, fcm_token',
+      [fcm_token, req.params.id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Host not found' });
+    res.json({ message: 'FCM token saved', host: result.rows[0] });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = { getAll, getById, create, update, remove, saveFcmToken };

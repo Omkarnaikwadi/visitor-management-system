@@ -112,6 +112,9 @@ const migrate = async () => {
     // Add fcm_token to users
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS fcm_token TEXT`).catch(() => {});
 
+    // Add fcm_token to hosts
+    await client.query(`ALTER TABLE hosts ADD COLUMN IF NOT EXISTS fcm_token TEXT`).catch(() => {});
+
     // Seed parking slots A1-A10, B1-B10
     const slots = [...Array(10).keys()].flatMap(i => [`A${i+1}`, `B${i+1}`]);
     for (const s of slots) {

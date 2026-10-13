@@ -54,20 +54,12 @@ const getProfile = async (req, res) => {
 
 const selfRegister = async (req, res) => {
   try {
-    const { name, email, password, role, phone } = req.body;
-
-    // Only allow 'admin' role if no admin exists yet
-    if (role === 'admin') {
-      const adminCheck = await pool.query("SELECT id FROM users WHERE role = 'admin' LIMIT 1");
-      if (adminCheck.rows.length > 0) {
-        return res.status(403).json({ error: 'An admin account already exists. Contact your administrator.' });
-      }
-    }
+    const { name, email, password, phone } = req.body;
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const result = await pool.query(
       'INSERT INTO users (name, email, password, role, phone) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email, role',
-      [name, email, hashedPassword, role || 'receptionist', phone]
+      [name, email, hashedPassword, 'receptionist', phone]
     );
 
     const token = jwt.sign({ id: result.rows[0].id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
@@ -78,4 +70,44 @@ const selfRegister = async (req, res) => {
   }
 };
 
-module.exports = { login, register, getProfile, selfRegister };
+const getReceptionists = async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, name, email, phone, role, is_active, created_at FROM users WHERE role = 'receptionist' ORDER BY created_at DESC`
+    );
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const toggleActive = async (req, res) => {
+  try {
+    const result = await pool.query(
+      `UPDATE users SET is_active = NOT is_active WHERE id = $1 AND role = 'receptionist' RETURNING id, name, is_active`,
+      [req.params.id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Receptionist not found' });
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { password } = req.body;
+    if (!password || password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    const hashed = await bcrypt.hash(password, 10);
+    const result = await pool.query(
+      `UPDATE users SET password = $1 WHERE id = $2 AND role = 'receptionist' RETURNING id, name`,
+      [hashed, req.params.id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Receptionist not found' });
+    res.json({ message: 'Password reset successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = { login, register, getProfile, selfRegister, getReceptionists, toggleActive, resetPassword };

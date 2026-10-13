@@ -23,6 +23,11 @@ router.post('/auth/fcm-token', auth, async (req, res) => {
   res.json({ message: 'FCM token saved' });
 });
 
+// Receptionist management (admin only)
+router.get('/receptionists', auth, adminOnly, authController.getReceptionists);
+router.patch('/receptionists/:id/toggle', auth, adminOnly, authController.toggleActive);
+router.patch('/receptionists/:id/reset-password', auth, adminOnly, authController.resetPassword);
+
 // OTP routes (public - no auth needed)
 router.post('/otp/send', otpController.sendOTPHandler);
 router.post('/otp/verify', otpController.verifyOTPHandler);
@@ -42,6 +47,7 @@ router.get('/hosts/:id', auth, hostController.getById);
 router.post('/hosts', auth, adminOnly, hostController.create);
 router.put('/hosts/:id', auth, adminOnly, hostController.update);
 router.delete('/hosts/:id', auth, adminOnly, hostController.remove);
+router.post('/hosts/:id/fcm-token', auth, hostController.saveFcmToken);
 
 // Pre-registration routes
 router.post('/pre-registrations', preRegController.create); // Public for self-registration
