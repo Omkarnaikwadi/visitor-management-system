@@ -17,7 +17,7 @@ const generateGatePassPDF = (visitData) => {
     const {
       visitor_name, visitor_phone, visitor_email, company,
       host_name, department, purpose, badge_number,
-      check_in, id_type, id_number, photo_url, qr_code
+      check_in, id_type, id_number, photo_url, qr_code, parking_slot
     } = visitData;
 
     const filename = `gatepass_${badge_number}.pdf`;
@@ -100,6 +100,7 @@ const generateGatePassPDF = (visitData) => {
     y = field('Host / Meeting With', host_name, y);
     y = field('Department', department, y);
     if (id_type && id_number) y = field(`ID Proof (${id_type.toUpperCase()})`, id_number, y);
+    if (parking_slot) y = field('Parking Slot', `🅿️  ${parking_slot}`, y);
     y += 4;
 
     // ── Divider ──────────────────────────────────────────────────────────

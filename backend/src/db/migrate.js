@@ -95,6 +95,29 @@ const migrate = async () => {
     await client.query(`ALTER TABLE otp_verifications ALTER COLUMN phone TYPE VARCHAR(100)`).catch(() => {});
     await client.query(`ALTER TABLE visitors ALTER COLUMN photo_url TYPE TEXT`).catch(() => {});
 
+    // Parking slots table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS parking_slots (
+        id SERIAL PRIMARY KEY,
+        slot_number VARCHAR(20) UNIQUE NOT NULL,
+        is_occupied BOOLEAN DEFAULT false,
+        visit_id INTEGER REFERENCES visits(id) ON DELETE SET NULL
+      )
+    `);
+
+    // Add parking_slot + qr_token to visits
+    await client.query(`ALTER TABLE visits ADD COLUMN IF NOT EXISTS parking_slot VARCHAR(20)`).catch(() => {});
+    await client.query(`ALTER TABLE visits ADD COLUMN IF NOT EXISTS qr_token TEXT`).catch(() => {});
+
+    // Add fcm_token to users
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS fcm_token TEXT`).catch(() => {});
+
+    // Seed parking slots A1-A10, B1-B10
+    const slots = [...Array(10).keys()].flatMap(i => [`A${i+1}`, `B${i+1}`]);
+    for (const s of slots) {
+      await client.query(`INSERT INTO parking_slots (slot_number) VALUES ($1) ON CONFLICT (slot_number) DO NOTHING`, [s]);
+    }
+
     await client.query('CREATE INDEX IF NOT EXISTS idx_visits_visitor ON visits(visitor_id)');
     await client.query('CREATE INDEX IF NOT EXISTS idx_visits_host ON visits(host_id)');
     await client.query('CREATE INDEX IF NOT EXISTS idx_visits_status ON visits(status)');

@@ -8,7 +8,6 @@ const hostController = require('../controllers/hostController');
 const preRegController = require('../controllers/preRegistrationController');
 const dashboardController = require('../controllers/dashboardController');
 const reportController = require('../controllers/reportController');
-
 const otpController = require('../controllers/otpController');
 
 // Auth routes
@@ -16,6 +15,13 @@ router.post('/auth/login', authController.login);
 router.post('/auth/register', auth, adminOnly, authController.register);
 router.post('/auth/register/self', authController.selfRegister);
 router.get('/auth/profile', auth, authController.getProfile);
+router.post('/auth/fcm-token', auth, async (req, res) => {
+  const { fcm_token } = req.body;
+  if (!fcm_token) return res.status(400).json({ error: 'fcm_token required' });
+  const pool = require('../config/db');
+  await pool.query('UPDATE users SET fcm_token=$1 WHERE id=$2', [fcm_token, req.user.id]);
+  res.json({ message: 'FCM token saved' });
+});
 
 // OTP routes (public - no auth needed)
 router.post('/otp/send', otpController.sendOTPHandler);
@@ -25,6 +31,7 @@ router.post('/otp/verify', otpController.verifyOTPHandler);
 router.post('/visitors/checkin', auth, visitorController.checkIn);
 router.put('/visitors/checkout/:id', auth, visitorController.checkOut);
 router.post('/visitors/scan-qr', auth, visitorController.scanQRCode);
+router.get('/visitors/returning', auth, visitorController.checkReturningVisitor);
 router.get('/visits/active', auth, visitorController.getActiveVisits);
 router.get('/visits', auth, visitorController.getAllVisits);
 router.get('/visits/:id', auth, visitorController.getVisitById);
