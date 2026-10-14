@@ -8,8 +8,6 @@ const sendEmail = async (to, subject, html, attachments = []) => {
   }
   const fromEmail = process.env.EMAIL_FROM_ADDRESS || 'noreply@brevo.com';
   const fromName = process.env.EMAIL_FROM_NAME || 'VMS System';
-  console.log(`[Email] Sending "${subject}" to ${to} via Brevo`);
-
   const client = new BrevoClient({ apiKey: process.env.BREVO_API_KEY });
   const payload = {
     sender: { name: fromName, email: fromEmail },
@@ -25,10 +23,8 @@ const sendEmail = async (to, subject, html, attachments = []) => {
   }
 
   try {
-    const result = await client.transactionalEmails.sendTransacEmail(payload);
-    console.log('[Email] Sent successfully, messageId:', result?.body?.messageId || result?.messageId);
+    await client.transactionalEmails.sendTransacEmail(payload);
   } catch (err) {
-    console.error('[Email] Brevo error:', err?.response?.body || err.message);
     throw new Error(err?.response?.body?.message || err.message);
   }
 };

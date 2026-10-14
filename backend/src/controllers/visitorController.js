@@ -82,8 +82,6 @@ const checkIn = async (req, res) => {
 
     const hostResult = await client.query('SELECT email, name, department, fcm_token FROM hosts WHERE id=$1', [host_id]);
     const host = hostResult.rows[0];
-    console.log('[CheckIn] Host found:', host?.name);
-    console.log('[CheckIn] Host fcm_token present:', !!host?.fcm_token);
 
     await client.query('COMMIT');
 
@@ -119,11 +117,11 @@ const checkIn = async (req, res) => {
     generateGatePassPDF(responseData)
       .then(async ({ filepath }) => {
         const tasks = [];
-        if (email) tasks.push(sendGatePassEmail(email, responseData, filepath).catch(e => console.error('[GatePass] Email error:', e.message)));
-        if (phone) tasks.push(sendWhatsAppGatePass(phone, responseData).catch(e => console.error('[GatePass] WhatsApp error:', e.message)));
+        if (email) tasks.push(sendGatePassEmail(email, responseData, filepath).catch(() => {}));
+        if (phone) tasks.push(sendWhatsAppGatePass(phone, responseData).catch(() => {}));
         await Promise.all(tasks);
       })
-      .catch(err => console.error('[GatePass] PDF error:', err.message));
+      .catch(() => {});
 
     res.status(201).json(responseData);
   } catch (error) {

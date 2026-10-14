@@ -20,14 +20,11 @@ const sendOTP = async (phone, otp) => {
       }
     });
 
-    console.log('Fast2SMS response:', JSON.stringify(response.data));
-
     if (!response.data.return) {
       throw new Error(response.data.message || 'Fast2SMS failed to send OTP');
     }
   } catch (err) {
     if (err.response) {
-      console.error('Fast2SMS error:', JSON.stringify(err.response.data));
       throw new Error(err.response.data?.message || `Fast2SMS error: ${err.response.status}`);
     }
     throw err;
