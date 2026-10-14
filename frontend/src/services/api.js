@@ -68,17 +68,19 @@ export const dashboardAPI = {
   getTrend: () => api.get('/dashboard/trend'),
 };
 
+const downloadBlob = async (url, params, filename) => {
+  const res = await api.get(url, { params, responseType: 'blob' });
+  const href = URL.createObjectURL(res.data);
+  const a = document.createElement('a');
+  a.href = href;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(href);
+};
+
 export const reportAPI = {
-  exportCSV: (params) => {
-    const baseUrl = import.meta.env.VITE_API_URL || '';
-    const query = new URLSearchParams(params).toString();
-    window.open(`${baseUrl}/api/reports/csv?${query}`, '_blank');
-  },
-  exportPDF: (params) => {
-    const baseUrl = import.meta.env.VITE_API_URL || '';
-    const query = new URLSearchParams(params).toString();
-    window.open(`${baseUrl}/api/reports/pdf?${query}`, '_blank');
-  },
+  exportCSV: (params) => downloadBlob('/reports/csv', params, `visits_report_${Date.now()}.csv`),
+  exportPDF: (params) => downloadBlob('/reports/pdf', params, `visits_report_${Date.now()}.pdf`),
   getDepartments: () => api.get('/reports/departments'),
 };
 

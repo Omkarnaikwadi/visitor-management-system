@@ -15,8 +15,8 @@ export default function Reports() {
 
   const cleanFilters = () => Object.fromEntries(Object.entries(filters).filter(([, v]) => v !== ''));
 
-  const handleExportCSV = () => { reportAPI.exportCSV(cleanFilters()); toast.success('CSV download started'); };
-  const handleExportPDF = () => { reportAPI.exportPDF(cleanFilters()); toast.success('PDF download started'); };
+  const handleExportCSV = () => reportAPI.exportCSV(cleanFilters()).then(() => toast.success('CSV download started')).catch(() => toast.error('Export failed'));
+  const handleExportPDF = () => reportAPI.exportPDF(cleanFilters()).then(() => toast.success('PDF download started')).catch(() => toast.error('Export failed'));
 
   const set = (k, v) => setFilters(f => ({ ...f, [k]: v }));
   const inputClass = "w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white transition-all";
